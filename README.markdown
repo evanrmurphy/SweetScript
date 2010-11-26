@@ -1,6 +1,6 @@
 # SweetScript
 
-A Lisp-like language that compiles into JavaScript. It comes with [sweet-expressions](http://www.dwheeler.com/readable/) for programming with more conventional-looking syntax, and brings macros to JavaScript. (Note: the use of sweet-expressions doesn't conform strictly to Wheeler's)
+A Lisp-like language that compiles into JavaScript. It comes with [sweet-expressions](http://www.dwheeler.com/readable/) for programming with more conventional-looking syntax, and brings macros to JavaScript. (Note: the use of sweet-expressions doesn't conform strictly to Wheeler's spec.)
 
 ## Overview
 
