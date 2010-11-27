@@ -24,11 +24,11 @@ A Lisp-like language that compiles into JavaScript. It comes with [sweet-express
     (= math
       {root   (. Math sqrt)
        square square
-       cube   (function(x)
+       cube   (function (x)
                 (* x (square x)))})
 
     ; jQuery:
-    (. ($ "body") css "background-color" "red")
+    (. ($ "body") (css "background-color" "red"))
 
 *SweetScript with mild use of sweet-expressions.*
 
@@ -55,7 +55,7 @@ A Lisp-like language that compiles into JavaScript. It comes with [sweet-express
                 * x square(x)}
 
     ; jQuery:
-    . $("body") css "background-color" "red"
+    . $("body") css("background-color" "red")
 
 *Totally sweet SweetScript.*
 
@@ -79,7 +79,9 @@ A Lisp-like language that compiles into JavaScript. It comes with [sweet-express
       {root   Math.sqrt
        square square
        cube   function(x)
-                x * square(x)}
+                * x square(x)}
 
     ; jQuery:
-    $("body").css "background-color" "red"
+    $("body").css("background-color" "red")
+
+We'll get there...
