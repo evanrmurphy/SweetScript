@@ -9,5 +9,5 @@
             "extend0.arc"
             "scheme0.arc"
             "extend-readtable0.arc"
-            "dessyntax.arc"
+            "read-normal.arc"
             ))
