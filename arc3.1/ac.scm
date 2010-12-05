@@ -77,7 +77,8 @@
 (define (ssyntax? x)
   (and (symbol? x)
        (not (or (eqv? x '+) (eqv? x '++) (eqv? x '_)
-                (eqv? x '|.|) (eqv? x '|:|) (eqv? x '|!|) (eqv? x '|~|) (eqv? x '|&|)))
+                (eqv? x '|.|) (eqv? x '|:|) (eqv? x '|!|) (eqv? x '|~|) (eqv? x '|&|)
+                ))
        (let ((name (symbol->string x)))
          (has-ssyntax-char? name (- (string-length name) 1)))))
 
