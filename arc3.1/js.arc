@@ -1,18 +1,13 @@
 ; Arcscript | arc2js | Jarcscript
 ; thanks to garply for the name ArcScript (http://arclanguage.org/item?id=12166)
 
-; TODO
-; improve get and fncall/objref/listcall situation
-; watch http://www.quirksmode.org/compatibility.html
-; string escaping
-;  using single quotes here and double in HTML. just that covers considerable nesting!
+; NOTES:
+; changing reader and ssyntax for dot broke rest params
+; in javascript, parameters are optional by default
+;  rest params and keyword params are tricky though
+;  (use the arguments array in javascript)
 ; warn if using invalid symbol, valid in arc but not js
-; optional parameters on functions (done?)
-; implement 'expand= etc. for more robust '=?
-; could quote be a function defined in js?
-; use aw's {} syntax for tables?
-; symbols that can't be used in Javascript identifiers (+, -, *, /, etc.) are extra ssyntax possibilites
-; are arrays isomorphic to always-proper (or always-improper) lists? keep in mind the boolean value of an empty array
+; string escaping
 
 (def butlast (xs)
   (firstn (- (len xs) 1) xs))
