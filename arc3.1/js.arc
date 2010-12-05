@@ -121,21 +121,6 @@
       (apply js-call1 x arg/s)
       (apply js-fncall x arg/s)))
 
-; pseudo-setforms
-; should be such that (car undefined) => nil
-
-(def js-car (xs)
-  (js-objref xs '(quote car)))
-
-(def js-cdr (xs)
-  (js-objref xs '(quote cdr)))
-
-(def js-listref (xs i)
-  (pr "car")
-  (pr #\()
-  (js-fncall 'nthcdr i xs)
-  (pr #\)))
-
 (def js-new (C . args)
   (pr "new ")
   (js1/s `(,C ,@args)))
