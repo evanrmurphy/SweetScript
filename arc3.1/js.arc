@@ -238,13 +238,10 @@
               '* '/ '>= '<=     
               '> '< '% '===     
               '&& '\|\| '\.)   (apply js-infix s)
-          (caris s 'car)       (apply js-car (cdr s))
-          (caris s 'cdr)       (apply js-cdr (cdr s))
           (caris s 'obj)       (apply js-obj (cdr s))
           (caris s 'array)     (apply js-array (cdr s))
           (caris s 'objref)    (apply js-objref (cdr s))
           (caris s 'fncall)    (apply js-fncall (cdr s))
-          (caris s 'listref)   (apply js-listref (cdr s))
           (caris s 'new)       (apply js-new (cdr s))
           (caris s 'typeof)    (apply js-typeof (cdr s))
           (caris s 'if)        (apply js-if (cdr s))
@@ -253,7 +250,6 @@
           (caris s 'var=)      (apply js-var= (cdr s))
           (caris s 'jsfor)     (apply js-for (cdr s))
           (caris s 'jsforin)   (apply js-forin (cdr s))
-          (js-macs* (car s))     (apply (js-macs* (car s)) (cdr s))
           (apply js-call s)))
 
 ; thanks, fallintothis (http://arclanguage.org/item?id=12100)
