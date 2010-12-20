@@ -190,17 +190,25 @@
   (pr "for" #\()
   (js `(var= ,v ,init)
       `(isnt ,v ,end))
-  (js1/s step)                      ; separate bc can't have semicolon
+  (js1/s step)                      ; separate because can't have semicolon
   (pr #\))
   (doblock body))
 
-(def js-forin (v h . body)
+(def js-for-in (v h . body)
   (pr "for" #\()
   (js1/s v)
   (pr " in ")
   (js1/s h)
   (pr #\))
   (doblock body))
+
+(= js-macs* (table))
+
+(mac js-mac (name args . body)
+  `(= (js-macs* ',name) (fn ,args (js1/s ,@body))))
+
+(js-mac string args
+  `(+ "" ,@args))
 
 (def js1 (s)
   (if (caris s 'quote)        (apply js-quote (cdr s))
@@ -221,8 +229,9 @@
       (caris s 'fn)        (apply js-fn (cdr s))
       (caris s 'assign)    (apply js-assign (cdr s))
       (caris s 'var=)      (apply js-var= (cdr s))
-      (caris s 'jsfor)     (apply js-for (cdr s))
-      (caris s 'jsforin)   (apply js-forin (cdr s))
+      (caris s 'for)       (apply js-for (cdr s))
+      (caris s 'for-in)    (apply js-for-in (cdr s))
+      (js-macs* (car s))   (apply (js-macs* (car s)) (cdr s))
       (apply js-call s)))
 
 ; thanks, fallintothis (http://arclanguage.org/item?id=12100)
