@@ -206,24 +206,24 @@
   (if (caris s 'quote)        (apply js-quote (cdr s))
       (or (isa s 'char)  
           (isa s 'string))    (js-str/charesc s) 
-          (atom s)               (pr s)
-          (in (car s) '+ '-   
-              '* '/ '>= '<=     
-              '> '< '% '===     
-              '&& '\|\| '\.)   (apply js-infix s)
-          (caris s 'obj)       (apply js-obj (cdr s))
-          (caris s 'array)     (apply js-array (cdr s))
-          (caris s 'objref)    (apply js-objref (cdr s))
-          (caris s 'fncall)    (apply js-fncall (cdr s))
-          (caris s 'new)       (apply js-new (cdr s))
-          (caris s 'typeof)    (apply js-typeof (cdr s))
-          (caris s 'if)        (apply js-if (cdr s))
-          (caris s 'fn)        (apply js-fn (cdr s))
-          (caris s 'assign)    (apply js-assign (cdr s))
-          (caris s 'var=)      (apply js-var= (cdr s))
-          (caris s 'jsfor)     (apply js-for (cdr s))
-          (caris s 'jsforin)   (apply js-forin (cdr s))
-          (apply js-call s)))
+      (atom s)               (pr s)
+      (in (car s) '+ '-   
+          '* '/ '>= '<=     
+          '> '< '% '===     
+          '&& '\|\| '\.)   (apply js-infix s)
+      (caris s '{)         (apply js-obj (cdr s))
+      (caris s '[)         (apply js-array (cdr s))
+      (caris s 'objref)    (apply js-objref (cdr s))
+      (caris s 'fncall)    (apply js-fncall (cdr s))
+      (caris s 'new)       (apply js-new (cdr s))
+      (caris s 'typeof)    (apply js-typeof (cdr s))
+      (caris s 'if)        (apply js-if (cdr s))
+      (caris s 'fn)        (apply js-fn (cdr s))
+      (caris s 'assign)    (apply js-assign (cdr s))
+      (caris s 'var=)      (apply js-var= (cdr s))
+      (caris s 'jsfor)     (apply js-for (cdr s))
+      (caris s 'jsforin)   (apply js-forin (cdr s))
+      (apply js-call s)))
 
 ; thanks, fallintothis (http://arclanguage.org/item?id=12100)
 ; consider improving based on http://arclanguage.org/item?id=12165
