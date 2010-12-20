@@ -134,52 +134,25 @@
     (pr #\;))
   (pr #\}))
 
-(def optional1 (x)
-  (caris x 'o))
-
-; incorrect or just ugly?
-; name conflictions with optional in fromjson
-
-(def optional (x)
-  (if (atom x)
-      nil
-      (or (optional1 (car x)) (optional (cdr x)))))
-
-; couldn't use var= for optional parms: "Unexpected token var"
-; ok to use assign instead of var=? should still have fn scope...
-; something wrong with optional parms?
 ; no destructuring bind
 
 (def js-fn (args . body)
   (pr #\( "function")
   (if (no args)
-      (do (arglist nil)
-          (retblock body))
+       (do (arglist nil)
+           (retblock body))
       (atom args)                       ; lone rest parm
-      (do (arglist nil)
-          (retblock
-            (cons `(var= ,args (arraylist arguments))
-                  body)))
-      (optional args)
-      (do (arglist
-            (accum acc
-              (each a args
-                (if (optional1 a)
-                    (acc (cadr a))
-                    (acc a)))))
-          (retblock
-            (accum a
-              (each o (nthcdr (pos optional1 args) args)
-                (a `(unless ,(cadr o)
-                      (assign ,(cadr o) ,(cadr:cdr o)))))
-              (apply a body))))
+       (do (arglist nil)
+           (retblock
+             (cons `(var= ,args (arraylist arguments))
+                   body)))
       (dotted args)                     ; dotted rest parm
-      (let args1 (nil-terminate args)
-        (arglist (butlast args1))
-        (retblock
-          (cons `(var= ,(last args1)
-                       (nthcdr ,(- (len args1) 1) (arraylist arguments)))
-                body)))
+       (let args1 (nil-terminate args)
+         (arglist (butlast args1))
+         (retblock
+           (cons `(var= ,(last args1)
+                        (nthcdr ,(- (len args1) 1) (arraylist arguments)))
+                 body)))
       (do (arglist args)
           (retblock body)))
   (pr #\)))
@@ -276,7 +249,7 @@
 
 (def js args
   (apply js1/s args)
-  (pr #\;))
+  (prn #\;))
 
 
 
