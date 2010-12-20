@@ -154,18 +154,6 @@
   (if (no args)
        (do (arglist nil)
            (retblock body))
-      (atom args)                       ; lone rest parm
-       (do (arglist nil)
-           (retblock
-             (cons `(var= ,args (arraylist arguments))
-                   body)))
-      (dotted args)                     ; dotted rest parm
-       (let args1 (nil-terminate args)
-         (arglist (butlast args1))
-         (retblock
-           (cons `(var= ,(last args1)
-                        (nthcdr ,(- (len args1) 1) (arraylist arguments)))
-                 body)))
       (do (arglist args)
           (retblock body)))
   (pr #\)))
