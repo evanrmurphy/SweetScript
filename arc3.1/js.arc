@@ -164,7 +164,6 @@
     (pr #\?)
     (js1/s (car 2a))
     (pr #\:)
-    ;(pr:js1/s cadr.2a) ; why or/when fails?
     (js1/s (cadr 2a)))
   (pr #\)))
 
@@ -173,13 +172,31 @@
   (pr #\=)
   (js1/s val))
 
-(def js-var= (var val)
+(def js-= args
+  (between 2a (pair args) (pr #\,)
+    (js1/s (car 2a))
+    (pr #\=)
+    (js1/s (cadr 2a))))
+
+(def js-var vars
+  (pr "var ")
+  (between var vars (pr #\,)
+    (js1/s var)))
+
+(def js-var=1 (var val)
   (pr "var ")
   (js1/s var)
   (pr #\=)
   (js1/s val))
 
-(def doblock (stmts)
+(def js-var= args
+  (pr "var ")
+  (between 2a (pair args) (pr #\,)
+    (js1/s (car 2a))
+    (pr #\=)
+    (js1/s (cadr 2a))))
+
+(def block (stmts)
   (pr #\{)
   (on s stmts
     (js1/s s)
@@ -192,7 +209,7 @@
       `(isnt ,v ,end))
   (js1/s step)                      ; separate because can't have semicolon
   (pr #\))
-  (doblock body))
+  (block body))
 
 (def js-for-in (v h . body)
   (pr "for" #\()
@@ -200,15 +217,7 @@
   (pr " in ")
   (js1/s h)
   (pr #\))
-  (doblock body))
-
-(= js-macs* (table))
-
-(mac js-mac (name args . body)
-  `(= (js-macs* ',name) (fn ,args (js1/s ,@body))))
-
-(js-mac string args
-  `(+ "" ,@args))
+  (block body))
 
 (def js1 (s)
   (if (caris s 'quote)        (apply js-quote (cdr s))
@@ -228,6 +237,8 @@
       (caris s 'if)        (apply js-if (cdr s))
       (caris s 'fn)        (apply js-fn (cdr s))
       (caris s 'assign)    (apply js-assign (cdr s))
+      (caris s '=)         (apply js-= (cdr s))
+      (caris s 'var)       (apply js-var (cdr s))
       (caris s 'var=)      (apply js-var= (cdr s))
       (caris s 'for)       (apply js-for (cdr s))
       (caris s 'for-in)    (apply js-for-in (cdr s))
@@ -260,5 +271,14 @@
   (apply js1/s args)
   (prn #\;))
 
+; macros
+
+(= js-macs* (table))
+
+(mac js-mac (name args . body)
+  `(= (js-macs* ',name) (fn ,args (js1/s ,@body))))
+
+(js-mac string args
+  `(+ "" ,@args))
 
 
