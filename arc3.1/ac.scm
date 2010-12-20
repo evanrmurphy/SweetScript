@@ -88,7 +88,8 @@
              (or (eqv? c #\:) (eqv? c #\~) 
                  (eqv? c #\&)
                  ;(eqv? c #\_) 
-                 (eqv? c #\.)  (eqv? c #\!)))
+                 (eqv? c #\.)  ; (eqv? c #\!)
+                 ))
            (has-ssyntax-char? string (- i 1)))))
 
 (define (read-from-string str)
