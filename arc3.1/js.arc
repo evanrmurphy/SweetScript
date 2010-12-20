@@ -239,7 +239,8 @@
       (atom s)               (pr s)
       (in (car s) '+ '-   
           '* '/ '>= '<=     
-          '> '< '% '===     
+          '> '< '% '==
+          '=== '!= '!==
           '&& '\|\| '\.)   (apply js-infix s)
       (caris s '{})        (apply js-obj (cdr s))
       (caris s '[])        (apply js-array (cdr s))

@@ -15,4 +15,3 @@
 (read-normal #\])
 (read-normal #\{)
 (read-normal #\})
-;(read-normal #\.)

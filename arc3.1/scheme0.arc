@@ -1,11 +1,12 @@
 ; http://awwx.ws/scheme0
+; Modified!
 
 (extend ac (s env) (and (errsafe:acons s) (is (car s) 'scheme))
   `(begin ,@(cdr s)))
 
-(= ac-denil       scheme.ac-denil)
-(= ac-global-name scheme.ac-global-name)
-(= ac-niltree     scheme.ac-niltree)
+(= ac-denil       (scheme ac-denil))
+(= ac-global-name (scheme ac-global-name))
+(= ac-niltree     (scheme ac-niltree))
 
 (mac ac-set-global (name val)
   (w/uniq (gname v)

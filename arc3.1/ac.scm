@@ -88,7 +88,7 @@
              (or (eqv? c #\:) (eqv? c #\~) 
                  (eqv? c #\&)
                  ;(eqv? c #\_) 
-                 (eqv? c #\.)  ; (eqv? c #\!)
+                 ;(eqv? c #\.) (eqv? c #\!)
                  ))
            (has-ssyntax-char? string (- i 1)))))
 
