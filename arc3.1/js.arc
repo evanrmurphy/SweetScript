@@ -87,7 +87,7 @@
     (js1/s a))
   (pr #\]))
 
-(def js-objref (h k)
+(def js-ref (h k)
   (js1/s h)
   (pr #\[)
   (js1/s k)
@@ -103,12 +103,9 @@
   (js1/s f)
   (arglist args))
 
-; x!y => (x 'y) => (fncall x 'y)
-; x.`y => (x `y) => (objref x 'y)
-
 (def js-call1 (x arg)
   (if (and (acons arg) (is (car arg) 'quasiquote)) 
-      (js-objref x (cons 'quote (cdr arg)))
+      (js-ref x (cons 'quote (cdr arg)))
       (js-fncall x arg)))
 
 (def js-call (x . arg/s)
@@ -230,13 +227,12 @@
           '&& '\|\| '\.)   (apply js-infix s)
       (caris s '{)         (apply js-obj (cdr s))
       (caris s '[)         (apply js-array (cdr s))
-      (caris s 'objref)    (apply js-objref (cdr s))
+      (caris s 'ref)       (apply js-ref (cdr s))
       (caris s 'fncall)    (apply js-fncall (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
       (caris s 'typeof)    (apply js-typeof (cdr s))
       (caris s 'if)        (apply js-if (cdr s))
       (caris s 'fn)        (apply js-fn (cdr s))
-      (caris s 'assign)    (apply js-assign (cdr s))
       (caris s '=)         (apply js-= (cdr s))
       (caris s 'var)       (apply js-var (cdr s))
       (caris s 'var=)      (apply js-var= (cdr s))
