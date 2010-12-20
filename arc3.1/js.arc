@@ -87,11 +87,27 @@
     (js1/s a))
   (pr #\]))
 
-(def js-ref (h k)
+(def js-dot1 (h k)
+  (js1/s h)
+  (pr #\.)
+  (js1/s k))
+
+(def js-dot args
+  (between a args (pr #\.)
+    (js1/s a)))
+
+(def js-ref1 (h k)
   (js1/s h)
   (pr #\[)
   (js1/s k)
   (pr #\]))
+
+(def js-ref args
+  (js1/s (car args))
+  (each a (cdr args)
+    (pr #\[)
+    (js1/s a)
+    (pr #\])))
 
 (def arglist (xs)
   (pr #\()
@@ -227,6 +243,8 @@
           '&& '\|\| '\.)   (apply js-infix s)
       (caris s '{)         (apply js-obj (cdr s))
       (caris s '[)         (apply js-array (cdr s))
+      (or (caris s 'dot)
+          (caris s '|.|))  (apply js-dot (cdr s))
       (caris s 'ref)       (apply js-ref (cdr s))
       (caris s 'fncall)    (apply js-fncall (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
