@@ -147,7 +147,13 @@
     (pr #\;))
   (pr #\}))
 
-; no destructuring bind
+;(def js-dotted (x)
+;  (if (atom x)
+;       nil
+;      (is (car x) '\.)
+;       t
+;      (and (cdr x) (or (atom (cdr x))
+;                       (js-dotted (cdr x))))))
 
 (def js-fn (args . body)
   (pr #\( "function")
@@ -159,13 +165,13 @@
            (retblock
              (cons `(var= ,args (arraylist arguments))
                    body)))
-      (dotted args)                     ; dotted rest parm
-       (let args1 (nil-terminate args)
-         (arglist (butlast args1))
-         (retblock
-           (cons `(var= ,(last args1)
-                        (nthcdr ,(- (len args1) 1) (arraylist arguments)))
-                 body)))
+      ;(js-dotted args)                  ; dotted rest parm
+      ; (let args1 (nil-terminate args)
+      ;   (arglist (butlast args1))
+      ;   (retblock
+      ;     (cons `(var= ,(last args1)
+      ;                  (nthcdr ,(- (len args1) 1) (arraylist arguments)))
+      ;           body)))
       (do (arglist args)
           (retblock body)))
   (pr #\)))
