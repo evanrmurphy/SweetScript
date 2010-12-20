@@ -241,10 +241,9 @@
           '* '/ '>= '<=     
           '> '< '% '===     
           '&& '\|\| '\.)   (apply js-infix s)
-      (caris s '{)         (apply js-obj (cdr s))
-      (caris s '[)         (apply js-array (cdr s))
-      (or (caris s 'dot)
-          (caris s '|.|))  (apply js-dot (cdr s))
+      (caris s '{})        (apply js-obj (cdr s))
+      (caris s '[])        (apply js-array (cdr s))
+      (caris s 'dot)       (apply js-dot (cdr s))
       (caris s 'ref)       (apply js-ref (cdr s))
       (caris s 'fncall)    (apply js-fncall (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
