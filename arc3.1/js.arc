@@ -176,6 +176,15 @@
           (retblock body)))
   (pr #\)))
 
+(def js-ternary (c t e)
+  (pr #\()
+  (js1/s c)
+  (pr #\?)
+  (js1/s t)
+  (pr #\:)
+  (js1/s e)
+  (pr #\)))
+
 (def js-if args
   (pr #\()
   (js1/s (car args))
@@ -255,6 +264,7 @@
       (caris s 'fncall)    (apply js-fncall (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
       (caris s 'typeof)    (apply js-typeof (cdr s))
+      (caris s '?:)        (apply js-ternary (cdr s))
       (caris s 'if)        (apply js-if (cdr s))
       (caris s 'fn)        (apply js-fn (cdr s))
       (caris s '=)         (apply js-= (cdr s))
@@ -283,8 +293,14 @@
       (cons (ssexpand-all (car expr))
             (ssexpand-all (cdr expr)))))
 
+;(def js1/s args
+;  (between a (ssexpand-all args) (pr #\;)
+;    (js1 a)))
+
+; the no ssyntax version
+
 (def js1/s args
-  (between a (ssexpand-all args) (pr #\;)
+  (between a args (pr #\;)
     (js1 a)))
 
 (def js args
@@ -300,5 +316,3 @@
 
 (js-mac string args
   `(+ "" ,@args))
-
-
