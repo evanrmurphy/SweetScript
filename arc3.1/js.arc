@@ -231,6 +231,10 @@
     (pr #\;))
   (pr #\}))
 
+(def js-do0 stmts
+  (between s stmts (pr #\;)
+    (js1/s s)))
+
 (def js-for (v init end step . body)
   (pr "for" #\()
   (js `(var= ,v ,init)
@@ -264,6 +268,7 @@
       (caris s 'fncall)    (apply js-fncall (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
       (caris s 'typeof)    (apply js-typeof (cdr s))
+      (caris s 'do0)       (apply js-do0 (cdr s))
       (caris s '?:)        (apply js-ternary (cdr s))
       (caris s 'if)        (apply js-if (cdr s))
       (caris s 'fn)        (apply js-fn (cdr s))
@@ -316,3 +321,32 @@
 
 (js-mac string args
   `(+ "" ,@args))
+
+; let, various versions
+
+(js-mac let (var val . body)
+  `((fn (,var)
+      ,@body)
+    ,val))
+
+(js-mac let (var val . body)
+  `(\. (fn (,var)
+         ,@body)
+       (call this ,val)))
+
+(js-mac let (var val . body)
+  `(\. (fn ()
+         (var= ,var ,val)
+         ,@body)
+       (call this)))
+
+; mangles variables instead of calling
+;  functions
+; great for stack but not nestable yet
+; see http://arclanguage.org/item?id=12952
+
+(js-mac let (var val . body)
+  (w/uniq gvar
+    `(do0
+       (var= ,gvar ,val)
+       ,@(tree-subst var gvar body))))
