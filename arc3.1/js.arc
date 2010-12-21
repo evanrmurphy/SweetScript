@@ -343,6 +343,7 @@
 ; mangles variables instead of calling
 ;  functions
 ; great for stack but not nestable yet
+; uses uniqs now, should do s/x/_x/g
 ; see http://arclanguage.org/item?id=12952
 
 (js-mac let (var val . body)
