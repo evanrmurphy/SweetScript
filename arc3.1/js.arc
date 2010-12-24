@@ -329,10 +329,10 @@
       ,@body)
     ,val))
 
-(js-mac let (var val . body)
-  `(\. (fn (,var)
-         ,@body)
-       (call this ,val)))
+; (js-mac let (var val . body)
+;   `(\. (fn (,var)
+;          ,@body)
+;        (call this ,val)))
 
 (js-mac let (var val . body)
   `(\. (fn ()
@@ -346,7 +346,7 @@
 ; uses uniqs now, should do s/x/_x/g
 ; see http://arclanguage.org/item?id=12952
 
-(js-mac let (var val . body)
+(js-mac let! (var val . body)
   (w/uniq gvar
     `(do0
        (var= ,gvar ,val)
