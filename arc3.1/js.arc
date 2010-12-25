@@ -351,3 +351,9 @@
     `(do0
        (var= ,gvar ,val)
        ,@(tree-subst var gvar body))))
+
+(js-mac with (parms . body)
+  `(\. (fn ()
+         (var= ,@parms)
+         ,@body)
+       (call this)))
