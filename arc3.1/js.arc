@@ -40,16 +40,12 @@
        ,@body
        (js-close-q)))
 
-; works for quoting lists but not expressions
-;  because '(fn (x) x) => list(fn,x(),x);
-;                      instead of
-;                      => 'function(x){return x;}'
 (def js-quote (x)
-  (if ;acons.x 
-      ; (js1/s `(list ,@x))
+  (if (acons x) 
+       (js1s `([] ,@x))
       (number x)
        (pr x)
-      (js-w/qs (js1/s x))))
+      (js-w/qs (js1s x))))
 
 (def js-charesc (c)
   (case c #\newline (pr "\\n")
@@ -70,53 +66,38 @@
 (def js-infix (op . args)
   (pr #\()
   (between a args (pr op)
-    (js1/s a))
+    (js1s a))
   (pr #\)))
 
 (def js-obj args
   (pr #\{)
   (between 2a (pair args) (pr #\,)
-    (js1/s (car 2a))
+    (js1s (car 2a))
     (pr #\:)
-    (js1/s (cadr 2a)))
+    (js1s (cadr 2a)))
   (pr #\}))
 
 (def js-array args
   (pr #\[)
   (between a args (pr #\,)
-    (js1/s a))
-  (pr #\]))
-
-(def js-dot1 (h k)
-  (js1/s h)
-  (pr #\.)
-  (js1/s k))
-
-(def js-dot args
-  (between a args (pr #\.)
-    (js1/s a)))
-
-(def js-ref1 (h k)
-  (js1/s h)
-  (pr #\[)
-  (js1/s k)
+    (js1s a))
   (pr #\]))
 
 (def js-ref args
-  (js1/s (car args))
+  (js1s (car args))
   (each a (cdr args)
     (pr #\[)
-    (js1/s a)
+    (js1s a)
     (pr #\])))
 
 (def arglist (xs)
   (pr #\()
   (between x xs (pr #\,)
-    (js1/s x)) 
+    (js1s x)) 
   (pr #\)))
 
 (def js-fncall (f . args)
-  (js1/s f)
+  (js1s f)
   (arglist args))
 
 (def js-call1 (x arg)
@@ -131,189 +112,100 @@
 
 (def js-new (C . args)
   (pr "new ")
-  (js1/s `(,C ,@args)))
+  (js1s `(,C ,@args)))
 
 (def js-typeof args
   (pr "typeof ")
   (each a args
-    (js1/s a)))
+    (js1s a)))
+
+; bad name when everything is an expression
 
 (def retblock (exprs)
   (pr #\{
       "return ")
   (between x exprs (pr #\,)
-    (js1/s x))
+    (js1s x))
   (pr #\; #\}))
-
-;(def js-dotted (x)
-;  (if (atom x)
-;       nil
-;      (is (car x) '\.)
-;       t
-;      (and (cdr x) (or (atom (cdr x))
-;                       (js-dotted (cdr x))))))
 
 (def js-fn (args . body)
   (pr #\( "function")
   (if (no args)
        (do (arglist nil)
            (retblock body))
-      (atom args)                       ; lone rest parm
+      (atom args) 
        (do (arglist nil)
            (retblock
-             (cons `(var= ,args (arraylist arguments))
+             (cons `(= ,args
+                       ((\. Array prototype slice call)
+                        arguments))
                    body)))
-      ;(js-dotted args)                  ; dotted rest parm
-      ; (let args1 (nil-terminate args)
-      ;   (arglist (butlast args1))
-      ;   (retblock
-      ;     (cons `(var= ,(last args1)
-      ;                  (nthcdr ,(- (len args1) 1) (arraylist arguments)))
-      ;           body)))
+      (dotted args)
+       (let args1 (nil-terminate args)
+         (arglist (butlast args1))
+         (retblock
+           (cons `(= ,(last args1)
+                     ((\. Array prototype slice call)
+                      arguments
+                      ,(- (len args1) 1)))
+                 body)))
       (do (arglist args)
           (retblock body)))
   (pr #\)))
 
-(def js-ternary (c t e)
-  (pr #\()
-  (js1/s c)
-  (pr #\?)
-  (js1/s t)
-  (pr #\:)
-  (js1/s e)
-  (pr #\)))
-
 (def js-if args
   (pr #\()
-  (js1/s (car args))
+  (js1s (car args))
   (each 2a (pair (cdr args))
     (pr #\?)
-    (js1/s (car 2a))
+    (js1s (car 2a))
     (pr #\:)
-    (js1/s (cadr 2a)))
+    (js1s (cadr 2a)))
   (pr #\)))
-
-(def js-assign (var val)
-  (js1/s var)
-  (pr #\=)
-  (js1/s val))
 
 (def js-= args
   (between 2a (pair args) (pr #\,)
-    (js1/s (car 2a))
+    (js1s (car 2a))
     (pr #\=)
-    (js1/s (cadr 2a))))
+    (js1s (cadr 2a))))
 
-(def js-var vars
-  (pr "var ")
-  (between var vars (pr #\,)
-    (js1/s var)))
-
-(def js-var=1 (var val)
-  (pr "var ")
-  (js1/s var)
-  (pr #\=)
-  (js1/s val))
-
-(def js-var= args
-  (pr "var ")
-  (between 2a (pair args) (pr #\,)
-    (js1/s (car 2a))
-    (pr #\=)
-    (js1/s (cadr 2a))))
-
-(def block (stmts)
-  (pr #\{)
-  (on s stmts
-    (js1/s s)
-    (pr #\;))
-  (pr #\}))
-
-(def js-do-bang stmts
-  (between s stmts (pr #\;)
-    (js1/s s)))
-
-(def js-do\, stmts
-  (between s stmts (pr #\,)
-    (js1/s s)))
-
-(def js-for (v init end step . body)
-  (pr "for" #\()
-  (js `(var= ,v ,init)
-      `(isnt ,v ,end))
-  (js1/s step)                      ; separate because can't have semicolon
-  (pr #\))
-  (block body))
-
-(def js-for-in (v h . body)
-  (pr "for" #\()
-  (js1/s v)
-  (pr " in ")
-  (js1/s h)
-  (pr #\))
-  (block body))
+(def js-do exprs
+  (pr #\()
+  (between x exprs (pr #\,)
+    (js1s x))
+  (pr #\)))
 
 (def js1 (s)
-  (if (caris s 'quote)        (apply js-quote (cdr s))
+  (if (caris s 'quote)     (apply js-quote (cdr s))
       (or (isa s 'char)  
-          (isa s 'string))    (js-str/charesc s) 
-      (atom s)               (pr s)
+          (isa s 'string)) (js-str/charesc s) 
+      (no s)               (pr 'null)  
+      (atom s)             (pr s)
       (in (car s) '+ '-   
           '* '/ '>= '<=     
           '> '< '% '==
           '=== '!= '!==
-          '&& '\|\| '\.
-          '\,)             (apply js-infix s)
+          '+= '-= '*= '/=
+          '%= '&& '\|\|
+          '\. '\,)         (apply js-infix s)
       (caris s '{})        (apply js-obj (cdr s))
       (caris s '[])        (apply js-array (cdr s))
-      (caris s 'dot)       (apply js-dot (cdr s))
       (caris s 'ref)       (apply js-ref (cdr s))
-      (caris s 'fncall)    (apply js-fncall (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
       (caris s 'typeof)    (apply js-typeof (cdr s))
-      (caris s 'do!)       (apply js-do-bang (cdr s))
-      (caris s 'do\,)      (apply js-do\, (cdr s))
-      (caris s '?:)        (apply js-ternary (cdr s))
+      (caris s 'do)        (apply js-do (cdr s))
       (caris s 'if)        (apply js-if (cdr s))
       (caris s 'fn)        (apply js-fn (cdr s))
       (caris s '=)         (apply js-= (cdr s))
-      (caris s 'var)       (apply js-var (cdr s))
-      (caris s 'var=)      (apply js-var= (cdr s))
-      (caris s 'for)       (apply js-for (cdr s))
-      (caris s 'for-in)    (apply js-for-in (cdr s))
       (js-macs* (car s))   (apply (js-macs* (car s)) (cdr s))
-      (apply js-call s)))
+                           (apply js-call s)))
 
-; thanks, fallintothis (http://arclanguage.org/item?id=12100)
-; consider improving based on http://arclanguage.org/item?id=12165
-
-(def ssexpand-all (expr)
-  (if (ssyntax expr)
-       (let expanded (ssexpand expr)
-         (if (is expanded expr)
-             expr
-             (ssexpand-all expanded)))
-      (atom expr)
-       expr
-      (is (car expr) 'quote)
-       (if (caris (cadr expr) 'unquote)
-           (list 'quote (ssexpand-all (cadr expr)))
-           expr)
-      (cons (ssexpand-all (car expr))
-            (ssexpand-all (cdr expr)))))
-
-;(def js1/s args
-;  (between a (ssexpand-all args) (pr #\;)
-;    (js1 a)))
-
-; the no ssyntax version
-
-(def js1/s args
+(def js1s args
   (between a args (pr #\,)
     (js1 a)))
 
 (def js args
-  (apply js1/s args)
+  (apply js1s args)
   (prn #\;))
 
 ; macros
@@ -321,39 +213,23 @@
 (= js-macs* (table))
 
 (mac js-mac (name args . body)
-  `(= (js-macs* ',name) (fn ,args (js1/s ,@body))))
-
-(js-mac string args
-  `(+ "" ,@args))
-
-(js-mac do body
-  `(\. (fn ()
-         ,@body)
-       (call this)))
-
-(js-mac with (parms . body)
-  `(\. (fn ,(map1 car (pair parms))
-         ,@body)
-       (call this ,@(map1 cadr (pair parms)))))
+  `(= (js-macs* ',name) (fn ,args (js1s ,@body))))
 
 (js-mac let (var val . body)
-  `(with (,var ,val) ,@body))
-
-; mangles variables instead of calling
-;  functions
-; uses uniqs now, could do s/x/_x/g
-; see http://arclanguage.org/item?id=12952
-
-(js-mac let! (var val . body)
   (w/uniq gvar
-    `(do!
-       (= ,gvar ,val)
-       ,@(tree-subst var gvar body))))
+    `(do (= ,gvar ,val)
+         ,@(tree-subst var gvar body))))
 
-(js-mac with! (parms . body)
+(js-mac with (parms . body)
   (if (no parms) 
-      `(do! ,@body)
-      `(let! ,(car parms) ,(cadr parms) 
+      `(do ,@body)
+      `(let ,(car parms) ,(cadr parms) 
          (with ,(cddr parms) ,@body))))
+
+(js-mac when (test . body)
+  `(if ,test (do ,@body)))
+
+(js-mac unless (test . body)
+  `(if (! ,test) (do ,@body)))
 
   
