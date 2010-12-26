@@ -231,7 +231,7 @@
     (pr #\;))
   (pr #\}))
 
-(def js-do0 stmts
+(def js-do-bang stmts
   (between s stmts (pr #\;)
     (js1/s s)))
 
@@ -268,7 +268,7 @@
       (caris s 'fncall)    (apply js-fncall (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
       (caris s 'typeof)    (apply js-typeof (cdr s))
-      (caris s 'do0)       (apply js-do0 (cdr s))
+      (caris s 'do!)       (apply js-do-bang (cdr s))
       (caris s '?:)        (apply js-ternary (cdr s))
       (caris s 'if)        (apply js-if (cdr s))
       (caris s 'fn)        (apply js-fn (cdr s))
@@ -324,32 +324,31 @@
 
 ; let, various versions
 
-(js-mac let (var val . body)
-  `((fn (,var)
-      ,@body)
-    ,val))
+; (js-mac let (var val . body)
+;   `((fn (,var)
+;       ,@body)
+;     ,val))
 
 ; (js-mac let (var val . body)
 ;   `(\. (fn (,var)
 ;          ,@body)
 ;        (call this ,val)))
 
-(js-mac let (var val . body)
-  `(\. (fn ()
-         (var= ,var ,val)
-         ,@body)
-       (call this)))
+; (js-mac let (var val . body)
+;   `(\. (fn ()
+;          (var= ,var ,val)
+;          ,@body)
+;        (call this)))
 
 ; mangles variables instead of calling
 ;  functions
-; great for stack but not nestable yet
-; uses uniqs now, should do s/x/_x/g
+; uses uniqs now, could do s/x/_x/g
 ; see http://arclanguage.org/item?id=12952
 
-(js-mac let! (var val . body)
+(js-mac let (var val . body)
   (w/uniq gvar
-    `(do0
-       (var= ,gvar ,val)
+    `(do!
+       (= ,gvar ,val)
        ,@(tree-subst var gvar body))))
 
 (js-mac with (parms . body)
