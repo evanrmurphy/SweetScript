@@ -18,5 +18,5 @@
             "between0.arc"
 
             "js.arc"
-            ;"read-normal2.arc"
+            "read-normal2.arc"
             ))
