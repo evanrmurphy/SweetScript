@@ -58,12 +58,12 @@
     (js1s a))
   (pr #\)))
 
-(def js-obj args
+(def js-obj (h)
   (pr #\{)
-  (between 2a (pair args) (pr #\,)
-    (js1s (car 2a))
+  (between kv h (pr #\,)
+    (js1s (car kv))
     (pr #\:)
-    (js1s (cadr 2a)))
+    (js1s (cadr kv)))
   (pr #\}))
 
 (def js-array args
@@ -169,6 +169,7 @@
       (or (isa s 'char)  
           (isa s 'string)) (js-str/charesc s) 
       (no s)               (pr 'null)  
+      (isa s 'table)       (js-obj s)
       (atom s)             (pr s)
       (in (car s) '+ '-   
           '* '/ '>= '<=     
@@ -177,7 +178,6 @@
           '+= '-= '*= '/=
           '%= '&& '\|\|
           '\. '\,)         (apply js-infix s)
-      (caris s '{})        (apply js-obj (cdr s))
       (caris s '[])        (apply js-array (cdr s))
       (caris s 'ref)       (apply js-ref (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
