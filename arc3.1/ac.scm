@@ -67,7 +67,7 @@
           (unescape-ats s))
       (string-copy s)))          ; avoid immutable strings
 
-(define (literal? x)
+(defarc ac-literal (literal? x)
   (or (boolean? x)
       (char? x)
       (string? x)

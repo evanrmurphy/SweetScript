@@ -1,5 +1,5 @@
 ; http://awwx.ws/scheme0
-; Modified!
+; modified!
 
 (extend ac (s env) (and (errsafe:acons s) (is (car s) 'scheme))
   `(begin ,@(cdr s)))
