@@ -235,6 +235,10 @@
   (between s stmts (pr #\;)
     (js1/s s)))
 
+(def js-do\, stmts
+  (between s stmts (pr #\,)
+    (js1/s s)))
+
 (def js-for (v init end step . body)
   (pr "for" #\()
   (js `(var= ,v ,init)
@@ -260,7 +264,8 @@
           '* '/ '>= '<=     
           '> '< '% '==
           '=== '!= '!==
-          '&& '\|\| '\.)   (apply js-infix s)
+          '&& '\|\| '\.
+          '\,)             (apply js-infix s)
       (caris s '{})        (apply js-obj (cdr s))
       (caris s '[])        (apply js-array (cdr s))
       (caris s 'dot)       (apply js-dot (cdr s))
@@ -269,6 +274,7 @@
       (caris s 'new)       (apply js-new (cdr s))
       (caris s 'typeof)    (apply js-typeof (cdr s))
       (caris s 'do!)       (apply js-do-bang (cdr s))
+      (caris s 'do\,)      (apply js-do\, (cdr s))
       (caris s '?:)        (apply js-ternary (cdr s))
       (caris s 'if)        (apply js-if (cdr s))
       (caris s 'fn)        (apply js-fn (cdr s))
