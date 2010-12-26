@@ -357,7 +357,15 @@
        ,@(tree-subst var gvar body))))
 
 (js-mac with (parms . body)
-  `(\. (fn ()
-         (var= ,@parms)
-         ,@body)
-       (call this)))
+  ((afn (xs acc)
+     (if (no xs)  acc
+         (no acc) (self (cdr xs)
+                        `(let ,(car:car xs)
+                              ,(cadr:car xs)
+                           ,@body))
+                  (self (cdr xs)
+                        `(let ,(car:car xs)
+                              ,(cadr:car xs)
+                           ,acc))))
+   (rev:pair parms) nil))
+  
