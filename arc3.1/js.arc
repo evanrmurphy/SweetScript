@@ -138,14 +138,12 @@
   (each a args
     (js1/s a)))
 
-(def retblock (stmts)
-  (pr #\{)
-  (on s stmts
-    (if (is index (- (len stmts) 1))
-        (pr "return "))
-    (js1/s s)
-    (pr #\;))
-  (pr #\}))
+(def retblock (exprs)
+  (pr #\{
+      "return ")
+  (between x exprs (pr #\,)
+    (js1/s x))
+  (pr #\; #\}))
 
 ;(def js-dotted (x)
 ;  (if (atom x)
@@ -311,11 +309,11 @@
 ; the no ssyntax version
 
 (def js1/s args
-  (between a args (pr #\;)
+  (between a args (pr #\,)
     (js1 a)))
 
 (def js args
-  (js1/s `(do ,@args))
+  (apply js1/s args)
   (prn #\;))
 
 ; macros
