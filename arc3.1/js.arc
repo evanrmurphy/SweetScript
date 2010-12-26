@@ -309,7 +309,7 @@
     (js1 a)))
 
 (def js args
-  (apply js1/s args)
+  (js1/s `(do ,@args))
   (prn #\;))
 
 ; macros
@@ -327,38 +327,29 @@
          ,@body)
        (call this)))
 
-; let, various versions
+(js-mac with (parms . body)
+  `(\. (fn ,(map1 car (pair parms))
+         ,@body)
+       (call this ,@(map1 cadr (pair parms)))))
 
-; (js-mac let (var val . body)
-;   `((fn (,var)
-;       ,@body)
-;     ,val))
-
-; (js-mac let (var val . body)
-;   `(\. (fn (,var)
-;          ,@body)
-;        (call this ,val)))
-
-; (js-mac let (var val . body)
-;   `(\. (fn ()
-;          (var= ,var ,val)
-;          ,@body)
-;        (call this)))
+(js-mac let (var val . body)
+  `(with (,var ,val) ,@body))
 
 ; mangles variables instead of calling
 ;  functions
 ; uses uniqs now, could do s/x/_x/g
 ; see http://arclanguage.org/item?id=12952
 
-(js-mac let (var val . body)
+(js-mac let! (var val . body)
   (w/uniq gvar
     `(do!
        (= ,gvar ,val)
        ,@(tree-subst var gvar body))))
 
-(js-mac with (parms . body)
+(js-mac with! (parms . body)
   (if (no parms) 
       `(do! ,@body)
-      `(let ,(car parms) ,(cadr parms) 
+      `(let! ,(car parms) ,(cadr parms) 
          (with ,(cddr parms) ,@body))))
+
   
