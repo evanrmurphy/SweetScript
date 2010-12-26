@@ -322,6 +322,11 @@
 (js-mac string args
   `(+ "" ,@args))
 
+(js-mac do body
+  `(\. (fn ()
+         ,@body)
+       (call this)))
+
 ; let, various versions
 
 ; (js-mac let (var val . body)
