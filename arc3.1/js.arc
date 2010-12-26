@@ -31,7 +31,7 @@
 
 (def js-quote (x)
   (if (acons x) 
-       (js1s `([] ,@x))
+       (apply js-array x)
       (number x)
        (pr x)
       (js-w/qs (js1s x))))
@@ -178,7 +178,6 @@
           '+= '-= '*= '/=
           '%= '&& '\|\|
           '\. '\,)         (apply js-infix s)
-      (caris s '[])        (apply js-array (cdr s))
       (caris s 'ref)       (apply js-ref (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
       (caris s 'typeof)    (apply js-typeof (cdr s))
