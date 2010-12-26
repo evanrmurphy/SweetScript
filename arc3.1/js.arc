@@ -1,14 +1,3 @@
-; Arcscript | arc2js | Jarcscript
-; thanks to garply for the name ArcScript (http://arclanguage.org/item?id=12166)
-
-; NOTES:
-; changing reader and ssyntax for dot broke rest params
-; in javascript, parameters are optional by default
-;  rest params and keyword params are tricky though
-;  (use the arguments array in javascript)
-; warn if using invalid symbol, valid in arc but not js
-; string escaping
-
 (def butlast (xs)
   (firstn (- (len xs) 1) xs))
 
