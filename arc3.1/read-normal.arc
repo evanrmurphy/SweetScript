@@ -11,7 +11,7 @@
            (unless (or (whitec  c) (ssyntax c) (in c #\( #\) ))
              (read port)))))))
 
-(read-normal #\[)
-(read-normal #\])
+; (read-normal #\[)
+; (read-normal #\])
 ; (read-normal #\{)
 ; (read-normal #\})

@@ -13,6 +13,7 @@
 
             "skipwhite1.arc"
             "table-rw3.arc"
+            "array.arc"
 
             "between0.arc"
 
