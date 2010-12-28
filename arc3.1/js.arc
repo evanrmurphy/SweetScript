@@ -58,12 +58,12 @@
     (js1s a))
   (pr #\)))
 
-(def js-obj (h)
+(def js-obj args
   (pr #\{)
-  (between kv h (pr #\,)
-    (js1s (car kv))
+  (between (k v) (pair args) (pr #\,)
+    (js1s k)
     (pr #\:)
-    (js1s (cadr kv)))
+    (js1s v))
   (pr #\}))
 
 (def js-array args
@@ -145,18 +145,18 @@
 (def js-if args
   (pr #\()
   (js1s (car args))
-  (each 2a (pair (cdr args))
+  (each (then else) (pair (cdr args))
     (pr #\?)
-    (js1s (car 2a))
+    (js1s then)
     (pr #\:)
-    (js1s (cadr 2a)))
+    (js1s else))
   (pr #\)))
 
 (def js-= args
-  (between 2a (pair args) (pr #\,)
-    (js1s (car 2a))
+  (between (var val) (pair args) (pr #\,)
+    (js1s var)
     (pr #\=)
-    (js1s (cadr 2a))))
+    (js1s val)))
 
 (def js-do exprs
   (pr #\()
@@ -169,7 +169,6 @@
       (or (isa s 'char)  
           (isa s 'string)) (js-str/charesc s) 
       (no s)               (pr 'null)  
-      (isa s 'table)       (js-obj s)
       (atom s)             (pr s)
       (in (car s) '+ '-   
           '* '/ '>= '<=     
@@ -179,6 +178,7 @@
           '%= '&& '\|\|
           '\. '\,)         (apply js-infix s)
       (caris s 'list)      (apply js-array (cdr s))
+      (caris s 'obj)       (apply js-obj (cdr s))
       (caris s 'ref)       (apply js-ref (cdr s))
       (caris s 'new)       (apply js-new (cdr s))
       (caris s 'typeof)    (apply js-typeof (cdr s))

@@ -5,7 +5,7 @@
   (if (is (peekc port) #\])
        (do (readc port) `(list ,@(rev acc)))
        (let x (read port)
-         (= acc (cons x acc))
+         (push x acc)
          (parse-array-items port acc))))
 
 (extend-readtable #\[ parse-array-items)

@@ -4,26 +4,26 @@
 (js `(do
 
 
-(def personUpdateSternness ()
+(def personUpdateStern ()
   (if (== this.laughter 0)
-       (= this.sternness true)
+       (= this.stern true)
       (> this.laughter 5)
-       (= this.sternness))
-  this.sternness)
+       (= this.stern))
+  this.stern)
 
 (def personUpdateLaughter ()
-  (if (! this.sternness)
+  (if (! this.stern)
        (+= this.laughter 10)
        (do (-- this.laughter)
            (if (< this.laughter -10)
                 (+= this.laughter 10000))))
-  this.sternness)
+  this.stern)
 
 (def person ()
-  {laughter '0
-   sternness 'false
-   updateSternness 'personUpdateSternness
-   updateLaughter 'personUpdateLaughter})
+  {laughter 0
+   stern false
+   updateStern personUpdateStern
+   updateLaughter personUpdateLaughter})
 
 (= evan (person)  ryan (person))
 
