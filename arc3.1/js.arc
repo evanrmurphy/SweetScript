@@ -164,6 +164,13 @@
     (js1s x))
   (pr #\)))
 
+; fix "SyntaxError: Unexpected token )"
+(def js-while (test . body)
+  (pr "(function(){")
+  (pr "while(") (js1s test) (pr "){")
+  (apply js-do body)
+  (pr "}).call(this)"))
+
 (def js1 (s)
   (if (caris s 'quote)     (apply js-quote (cdr s))
       (or (isa s 'char)  
@@ -186,6 +193,7 @@
       (caris s 'if)        (apply js-if (cdr s))
       (caris s 'fn)        (apply js-fn (cdr s))
       (caris s '=)         (apply js-= (cdr s))
+      (caris s 'while)     (apply js-while (cdr s))
       (js-macs* (car s))   (apply (js-macs* (car s)) (cdr s))
                            (apply js-call s)))
 
