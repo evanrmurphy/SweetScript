@@ -221,4 +221,7 @@
 (js-mac unless (test . body)
   `(if (! ,test) (do ,@body)))
 
+(js-mac def (name parms . body)
+  `(= ,name (fn ,parms ,@body)))
+
   
