@@ -193,9 +193,22 @@
   (between a args (pr #\,)
     (js1 a)))
 
+(def js-repl ()
+  (pr "sweet> ")
+  (let expr (read)
+    (if (iso expr '(sour))
+         (do (prn "Bye!") nil)
+         (do (js expr) (js-repl)))))
+
 (def js args
-  (apply js1s args)
-  (prn #\;))
+  (if (no args)
+       (do (prn "Welcome to SweetScript! Type (sour) to leave.")
+           (js-repl))
+       (do (apply js1s args)
+           (prn #\;))))
+
+; js alias
+(def sweet args (apply js args))
 
 ; macros
 
