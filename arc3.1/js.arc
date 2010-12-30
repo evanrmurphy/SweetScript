@@ -171,6 +171,11 @@
   (apply js-do body)
   (pr "}).call(this)"))
 
+(= js-macs* (table))
+
+(mac js-mac (name args . body)
+  `(= (js-macs* ',name) (fn ,args (js1s ,@body))))
+
 (def js1 (s)
   (if (caris s 'quote)     (apply js-quote (cdr s))
       (or (isa s 'char)  
@@ -221,29 +226,26 @@
 
 ; macros
 
-(= js-macs* (table))
+(js `(do
 
-(mac js-mac (name args . body)
-  `(= (js-macs* ',name) (fn ,args (js1s ,@body))))
-
-(js-mac let (var val . body)
+(mac let (var val . body)
   (w/uniq gvar
     `(do (= ,gvar ,val)
          ,@(tree-subst var gvar body))))
 
-(js-mac with (parms . body)
+(mac with (parms . body)
   (if (no parms) 
       `(do ,@body)
       `(let ,(car parms) ,(cadr parms) 
          (with ,(cddr parms) ,@body))))
 
-(js-mac when (test . body)
+(mac when (test . body)
   `(if ,test (do ,@body)))
 
-(js-mac unless (test . body)
+(mac unless (test . body)
   `(if (! ,test) (do ,@body)))
 
-(js-mac def (name parms . body)
+(mac def (name parms . body)
   `(= ,name (fn ,parms ,@body)))
 
-  
+)) 
