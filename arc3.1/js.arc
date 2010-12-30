@@ -169,7 +169,7 @@
   (pr "(function(){")
   (pr "while(") (js1s test) (pr "){")
   (apply js-do body)
-  (pr "}).call(this)"))
+  (pr "}}).call(this)"))
 
 (= js-macs* (table))
 
