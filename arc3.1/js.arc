@@ -61,8 +61,8 @@
   (apply js-infix op args)
   (pr #\)))
 
-(def js-w/commas args
-  (apply js-infix #\, args))
+(def js-w/commas (xs)
+  (apply js-infix #\, xs))
 
 (def js-obj args
   (pr #\{)
@@ -74,7 +74,7 @@
 
 (def js-array args
   (pr #\[)
-  (apply js-w/commas args)
+  (js-w/commas args)
   (pr #\]))
 
 (def js-ref args
@@ -86,7 +86,7 @@
 
 (def arglist (xs)
   (pr #\()
-  (apply js-w/commas xs) 
+  (js-w/commas xs) 
   (pr #\)))
 
 (def js-fncall (f . args)
@@ -117,7 +117,7 @@
 (def retblock (exprs)
   (pr #\{
       "return ")
-  (apply js-w/commas exprs)
+  (js-w/commas exprs)
   (pr #\; #\}))
 
 (def js-fn (args . body)
@@ -129,17 +129,17 @@
        (do (arglist nil)
            (retblock
              (cons `(= ,args
-                       ((\. Array prototype slice call)
-                        arguments))
+                       (Array.prototype.slice.call
+                         arguments))
                    body)))
       (dotted args)
        (let args1 (nil-terminate args)
          (arglist (butlast args1))
          (retblock
            (cons `(= ,(last args1)
-                     ((\. Array prototype slice call)
-                      arguments
-                      ,(- (len args1) 1)))
+                     (Array.prototype.slice.call
+                       arguments
+                       ,(- (len args1) 1)))
                  body)))
       (do (arglist args)
           (retblock body)))
@@ -163,7 +163,7 @@
 
 (def js-do exprs
   (pr #\()
-  (apply js-w/commas exprs)
+  (js-w/commas exprs)
   (pr #\)))
 
 (def js-while (test . body)
