@@ -52,11 +52,15 @@
         (isa c/s 'string)  (each c c/s
                              (js-charesc c)))))
 
-(def js-infix (op . args)
+(def js-infix-w/parens (op . args)
   (pr #\()
   (between a args (pr op)
     (js1s a))
   (pr #\)))
+
+(def js-infix (op . args)
+  (between a args (pr op)
+    (js1s a)))
 
 (def js-obj args
   (pr #\{)
@@ -165,10 +169,11 @@
   (pr #\)))
 
 (def js-while (test . body)
-  (pr "(function(){")
-  (pr "while(") (js1s test) (pr "){")
+  (pr "(function(){"
+        "while(") (js1s test) (pr "){")
   (apply js-do body)
-  (pr "}}).call(this)"))
+  (pr   "}"
+      "}).call(this)"))
 
 (= js-macs* (table))
 
@@ -187,8 +192,9 @@
           '=== '!= '!==
           '+= '-= '*= '/=
           '%= '&& '\|\|
-          '\. '\,)         (apply js-infix s)
-      (caris s '..)        (apply js-infix `(\. ,@(cdr s)))
+          '\,)             (apply js-infix-w/parens s)
+      (or (caris s '\.)
+          (caris s '..))   (apply js-infix (cons '|.| (cdr s)))
       (caris s 'list)      (apply js-array (cdr s))
       (caris s 'obj)       (apply js-obj (cdr s))
       (caris s 'ref)       (apply js-ref (cdr s))
