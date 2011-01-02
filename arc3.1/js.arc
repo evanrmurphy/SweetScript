@@ -52,15 +52,17 @@
         (isa c/s 'string)  (each c c/s
                              (js-charesc c)))))
 
-(def js-infix-w/parens (op . args)
-  (pr #\()
-  (between a args (pr op)
-    (js1s a))
-  (pr #\)))
-
 (def js-infix (op . args)
   (between a args (pr op)
     (js1s a)))
+
+(def js-infix-w/parens (op . args)
+  (pr #\()
+  (apply js-infix op args)
+  (pr #\)))
+
+(def js-w/commas args
+  (apply js-infix #\, args))
 
 (def js-obj args
   (pr #\{)
@@ -72,8 +74,7 @@
 
 (def js-array args
   (pr #\[)
-  (between a args (pr #\,)
-    (js1s a))
+  (apply js-w/commas args)
   (pr #\]))
 
 (def js-ref args
@@ -85,8 +86,7 @@
 
 (def arglist (xs)
   (pr #\()
-  (between x xs (pr #\,)
-    (js1s x)) 
+  (apply js-w/commas xs) 
   (pr #\)))
 
 (def js-fncall (f . args)
@@ -117,8 +117,7 @@
 (def retblock (exprs)
   (pr #\{
       "return ")
-  (between x exprs (pr #\,)
-    (js1s x))
+  (apply js-w/commas exprs)
   (pr #\; #\}))
 
 (def js-fn (args . body)
@@ -164,8 +163,7 @@
 
 (def js-do exprs
   (pr #\()
-  (between x exprs (pr #\,)
-    (js1s x))
+  (apply js-w/commas exprs)
   (pr #\)))
 
 (def js-while (test . body)
