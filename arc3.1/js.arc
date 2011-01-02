@@ -164,7 +164,6 @@
     (js1s x))
   (pr #\)))
 
-; fix "SyntaxError: Unexpected token )"
 (def js-while (test . body)
   (pr "(function(){")
   (pr "while(") (js1s test) (pr "){")
