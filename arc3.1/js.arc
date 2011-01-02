@@ -189,6 +189,7 @@
           '+= '-= '*= '/=
           '%= '&& '\|\|
           '\. '\,)         (apply js-infix s)
+      (caris s '..)        (apply js-infix `(\. ,@(cdr s)))
       (caris s 'list)      (apply js-array (cdr s))
       (caris s 'obj)       (apply js-obj (cdr s))
       (caris s 'ref)       (apply js-ref (cdr s))
