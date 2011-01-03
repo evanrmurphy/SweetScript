@@ -252,4 +252,23 @@
 (mac def (name parms . body)
   `(= ,name (fn ,parms ,@body)))
 
+; Start of haml-like html templating
+; system. Right now just takes html tags
+; with no attributes, e.g.
+;
+; sweet> (haml
+; 
+;        (html
+;          (body
+;            (ul
+;              (li (input))))))
+; ('<'+'html'+'>'+('<'+'body'+'>'+('<'+'ul'+'>'+('<'+'li'+'>'+('<'+'input'+'>'+''+'</'+'input'+'>')+'</'+'li'+'>')+'</'+'ul'+'>')+'</'+'body'+'>')+'</'+'html'+'>');
+
+(mac haml (expr)
+  `(+ "<" ',(car expr) ">"
+      ,(if (cdr expr)
+           `(haml ,@(cdr expr))
+           "")
+      "</" ',(car expr) ">"))
+
 )) 
