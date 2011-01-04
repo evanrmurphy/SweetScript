@@ -10,9 +10,8 @@ SweetScript runs on a modified version of [arc3.1](http://arclanguage.org/item?i
     cd SweetScript/arc3.1
     racket -f as.scm
 
-You should find yourself at the arc prompt. Enter `(sweet)` to use the SweetScript prompt:
+You should find yourself at the `arc>` prompt. Enter `(sweet)` to use SweetScript:
 
-    Use (quit) to quit, (tl) to return here after an interrupt.
     arc> (sweet)
     Welcome to SweetScript! Type (sour) to leave.
     sweet> (def hello ()
