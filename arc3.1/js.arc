@@ -274,13 +274,77 @@
            "")
       "</" ',(car expr) ">"))
 
+; underscore helper
+
+(mac _. args
+  `(.. _ ,@args))
+
+; Examples from http://documentcloud.github.com/underscore/#styles
+
+; Collections
+
+(_. (each [1 2 3] (fn (x) (alert x))))
+(_. (each {one 1 two 2 three 3} (fn (x) (alert x))))
+
+(_. (map [1 2 3] (fn (x) (* x 3))))
+(_. (map {one 1 two 2 three 3} (fn (x) (* x 3))))
+
+(= sum (_. (reduce [1 2 3] (fn (memo x) (+ memo x)) 0)))
+
+(= list [[0 1] [2 3] [4 5]]
+   flat (_. (reduceRight list (fn (a b) (.. a (concat b))) [])))
+
+(= even (_. (detect [1 2 3 4 5 6] (fn (x) (== (% x 2) 0)))))
+
+; alias select
+(= evens (_. (filter [1 2 3 4 5 6] (fn (x) (== (% x 2) 0)))))
+
+(= odds (_. (reject [1 2 3 4 5 6] (fn (x) (== (% x 2) 0)))))
+
+(_. (all [true 1 null "yes"]))
+
+(_. (any [true 1 null "yes"]))
+
+(_. (include [1 2 3] 3))
+
+(_. (invoke [[5 1 7] [3 2 1]] "sort"))
+
+(let stooges [{name "moe" age 40} {name "larry" age 50}
+              {name "curly" age 60}]
+  (_. (pluck stooges "name")))
+
+(let stooges [{name "moe" age 40} {name "larry" age 50}
+              {name "curly" age 60}]
+  (_. (max stooges (fn (stooge) stooge.age))))
+
+(let numbers [10 5 100 2 1000]
+  (_. (min numbers)))
+
+(_. (sortBy [1 2 3 4 5 6] (fn (x) (Math.sin x))))
+
+(_. (sortedIndex [10 20 30 40 50] 35))
+
+((fn () (_. (toArray arguments) (slice 0))) 1 2 3)
+
+(_. (size {one 1 two 2 three 3}))
+
+; Function (uh, ahem) Functions
+
+(let f (fn (greeting)
+         (+ greeting ": " this.name))
+  (= f (_. (bind f {name "moe"} "hi")))
+  (f))
+
 ; Example program
 ; Compiled output goes in static/sweet-example.js, which
 ; is linked to from static/sweet-example.html
+; Depends on underscore.js and jQuery
 
-; (= words [])
+(= word "hello"
+   wordTemplate (_. (template
+                      (.. ($ "#word-template") (html)))))
 
-(alert "hello world!")
-
+(.. ($ "body") (append
+                 (wordTemplate {word word})))
 
 )) 
