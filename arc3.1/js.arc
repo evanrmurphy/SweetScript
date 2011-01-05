@@ -249,6 +249,9 @@
 (mac unless (test . body)
   `(if (! ,test) (do ,@body)))
 
+(mac until (test . body)
+  `(while (! ,test) ,@body))
+
 (mac def (name parms . body)
   `(= ,name (fn ,parms ,@body)))
 
