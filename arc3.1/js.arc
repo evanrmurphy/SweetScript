@@ -256,6 +256,12 @@
   `(= ,name (fn ,parms ,@body)))
 
 ; html templating system inspired by html.arc
+;
+; sweet> (tag input (type "text")
+;          (tag ul ()
+;            (tag li () "apples")
+;            (tag li () "bananas")))
+; (('<'+'input'+' '+('type'+'='+'\'text\''+' ')+'>')+(('<'+'ul'+'>')+(('<'+'li'+'>')+'apples'+('</'+'li'+'>'))+(('<'+'li'+'>')+'bananas'+('</'+'li'+'>'))+('</'+'ul'+'>'))+('</'+'input'+'>'));
 
 (mac parse-attrs (attrs)
   (let acc nil
@@ -265,10 +271,12 @@
     acc))
 
 (mac start-tag (spec attrs)
-  `(+ "<" ',spec " " (parse-attrs ,attrs) ">"))
+  (if (no attrs)
+      `(+ "<" ',spec ">")
+      `(+ "<" ',spec " " (parse-attrs ,attrs) ">")))
 
 (mac end-tag (spec)
-  `(+ "</" ',spec " " ">"))
+  `(+ "</" ',spec ">"))
 
 (mac tag (spec attrs . body)
   `(+ (start-tag ,spec ,attrs)
