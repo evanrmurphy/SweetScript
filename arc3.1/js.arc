@@ -255,24 +255,25 @@
 (mac def (name parms . body)
   `(= ,name (fn ,parms ,@body)))
 
-; Start of haml-like html templating
-; system. Right now just takes html tags
-; with no attributes, e.g.
-;
-; sweet> (haml
-; 
-;        (html
-;          (body
-;            (ul
-;              (li (input))))))
-; ('<'+'html'+'>'+('<'+'body'+'>'+('<'+'ul'+'>'+('<'+'li'+'>'+('<'+'input'+'>'+''+'</'+'input'+'>')+'</'+'li'+'>')+'</'+'ul'+'>')+'</'+'body'+'>')+'</'+'html'+'>');
+; html templating system inspired by html.arc
 
-(mac haml (expr)
-  `(+ "<" ',(car expr) ">"
-      ,(if (cdr expr)
-           `(haml ,@(cdr expr))
-           "")
-      "</" ',(car expr) ">"))
+(mac parse-attrs (attrs)
+  (let acc nil
+    (each (k v) (pair attrs)
+      (= acc (+ acc `(',k "=" ',v " "))))
+    (push '+ acc)
+    acc))
+
+(mac start-tag (spec attrs)
+  `(+ "<" ',spec " " (parse-attrs ,attrs) ">"))
+
+(mac end-tag (spec)
+  `(+ "</" ',spec " " ">"))
+
+(mac tag (spec attrs . body)
+  `(+ (start-tag ,spec ,attrs)
+      ,@body
+      (end-tag ,spec)))
 
 ; underscore helper
 
