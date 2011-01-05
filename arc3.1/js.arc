@@ -274,4 +274,13 @@
            "")
       "</" ',(car expr) ">"))
 
+; Example program
+; Compiled output goes in static/sweet-example.js, which
+; is linked to from static/sweet-example.html
+
+; (= words [])
+
+(alert "hello world!")
+
+
 )) 
