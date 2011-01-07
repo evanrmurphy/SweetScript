@@ -283,6 +283,15 @@
       ,@body
       (end-tag ,spec)))
 
+; jQuery helper
+;
+; Example usage: ($ "p.neat"
+;                  (addClass "ohmy")
+;                  (show "slow"))
+
+(mac $ (selector . args)
+  `(.. (jQuery ,selector) ,@args))
+
 ; Examples from http://documentcloud.github.com/underscore/#styles
 
 ; Collections
@@ -345,10 +354,9 @@
 ; Depends on underscore.js and jQuery
 
 (= word "hello"
-   wordTemplate (_.template
-                      (.. ($ "#word-template") (html))))
+   wordTemplate (_.template ($ "#word-template" (html))))
 
-(.. ($ "body") (append
-                 (wordTemplate {word word})))
+($ "body" (append (wordTemplate {word word})))
+
 
 )) 
