@@ -283,11 +283,10 @@
       ,@body
       (end-tag ,spec)))
 
-; jQuery helper
-;
-; Example usage: ($ "p.neat"
-;                  (addClass "ohmy")
-;                  (show "slow"))
+; jQuery helper macro
+;  Example usage: ($ "p.neat"
+;                   (addClass "ohmy")
+;                   (show "slow"))
 
 (mac $ (selector . args)
   `(.. (jQuery ,selector) ,@args))
