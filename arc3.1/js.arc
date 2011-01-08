@@ -178,12 +178,21 @@
 (mac js-mac (name args . body)
   `(= (js-macs* ',name) (fn ,args (js1s ,@body))))
 
+(def cadris (x val) 
+  (and (acons x)
+       (acons (cdr x))
+       (is (cadr x) val)))
+
 (def js1 (s)
   (if (caris s 'quote)     (apply js-quote (cdr s))
       (or (isa s 'char)  
           (isa s 'string)) (js-str/charesc s) 
       (no s)               (pr 'null)  
       (atom s)             (pr s)
+      (cadris s '..)       (let new-s s
+                             (pop (cdr new-s))
+                             (push '.. new-s)
+                             (js1 new-s))
       (in (car s) '+ '-   
           '* '/ '>= '<=     
           '> '< '% '==
