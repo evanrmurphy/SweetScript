@@ -178,21 +178,12 @@
 (mac js-mac (name args . body)
   `(= (js-macs* ',name) (fn ,args (js1s ,@body))))
 
-(def cadris (x val) 
-  (and (acons x)
-       (acons (cdr x))
-       (is (cadr x) val)))
-
 (def js1 (s)
   (if (caris s 'quote)     (apply js-quote (cdr s))
       (or (isa s 'char)  
           (isa s 'string)) (js-str/charesc s) 
       (no s)               (pr 'null)  
       (atom s)             (pr s)
-      (cadris s '..)       (let new-s s
-                             (pop (cdr new-s))
-                             (push '.. new-s)
-                             (js1 new-s))
       (in (car s) '+ '-   
           '* '/ '>= '<=     
           '> '< '% '==
@@ -236,6 +227,27 @@
 
 ; js alias
 (def sweet args (apply js args))
+
+(def cadris (x val) 
+  (and (acons x)
+       (acons (cdr x))
+       (is (cadr x) val)))
+
+(def expand-infix-dot (xs)
+  (if (cadris xs '..)
+      (with (object (car xs)
+             method (car (cddr xs))
+             rest   (cdr (cddr xs)))
+       `((.. ,object ,method) ,@rest))
+      xs))
+
+(def expand-infix-dots (xs)
+  (if (no xs)
+       nil
+       (let new-xs (expand-infix-dot xs)
+         (if (iso xs new-xs)
+              (cons (car xs) (expand-infix-dots (cdr xs)))
+              (expand-infix-dots new-xs)))))
 
 ; macros
 
