@@ -207,26 +207,12 @@
       (js-macs* (car s))   (apply (js-macs* (car s)) (cdr s))
                            (apply js-call s)))
 
-(def js1s args
-  (between a args (pr #\,)
-    (js1 a)))
-
 (def js-repl ()
   (pr "sweet> ")
   (let expr (read)
     (if (iso expr '(sour))
          (do (prn "Bye!") nil)
          (do (js expr) (js-repl)))))
-
-(def js args
-  (if (no args)
-       (do (prn "Welcome to SweetScript! Type (sour) to leave.")
-           (js-repl))
-       (do (apply js1s args)
-           (prn #\;))))
-
-; js alias
-(def sweet args (apply js args))
 
 (def cadris (x val) 
   (and (acons x)
@@ -251,134 +237,149 @@
                    (cons (car xs) (expand-dots (cdr xs))))
               (expand-dots new-xs)))))
 
-; macros
+(def js1s args
+  (let expanded (expand-dots args)
+    (between a expanded (pr #\,)
+      (js1 a))))
 
-(js `(do
+(def js args
+  (if (no args)
+       (do (prn "Welcome to SweetScript! Type (sour) to leave.")
+           (js-repl))
+       (do (apply js1s args)
+           (prn #\;))))
 
-(mac let (var val . body)
-  (w/uniq gvar
-    `(do (= ,gvar ,val)
-         ,@(tree-subst var gvar body))))
+; js alias
+(def sweet args (apply js args))
 
-(mac with (parms . body)
-  (if (no parms) 
-      `(do ,@body)
-      `(let ,(car parms) ,(cadr parms) 
-         (with ,(cddr parms) ,@body))))
-
-(mac when (test . body)
-  `(if ,test (do ,@body)))
-
-(mac unless (test . body)
-  `(if (! ,test) (do ,@body)))
-
-(mac until (test . body)
-  `(while (! ,test) ,@body))
-
-(mac def (name parms . body)
-  `(= ,name (fn ,parms ,@body)))
-
-; html templating system inspired by html.arc
-;
-; sweet> (tag input (type "text")
-;          (tag ul ()
-;            (tag li () "apples")
-;            (tag li () "bananas")))
-; (('<'+'input'+' '+('type'+'='+'\'text\''+' ')+'>')+(('<'+'ul'+'>')+(('<'+'li'+'>')+'apples'+('</'+'li'+'>'))+(('<'+'li'+'>')+'bananas'+('</'+'li'+'>'))+('</'+'ul'+'>'))+('</'+'input'+'>'));
-
-(mac parse-attrs (attrs)
-  (let acc nil
-    (each (k v) (pair attrs)
-      (= acc (+ acc `(',k "=" ',v " "))))
-    (push '+ acc)
-    acc))
-
-(mac start-tag (spec attrs)
-  (if (no attrs)
-      `(+ "<" ',spec ">")
-      `(+ "<" ',spec " " (parse-attrs ,attrs) ">")))
-
-(mac end-tag (spec)
-  `(+ "</" ',spec ">"))
-
-(mac tag (spec attrs . body)
-  `(+ (start-tag ,spec ,attrs)
-      ,@body
-      (end-tag ,spec)))
-
-; jQuery helper macro
-;  Example usage: ($ "p.neat"
-;                   (addClass "ohmy")
-;                   (show "slow"))
-
-(mac $ (selector . args)
-  `(.. (jQuery ,selector) ,@args))
-
-; Examples from http://documentcloud.github.com/underscore/#styles
-
-; Collections
-
-(_.each [1 2 3] (fn (x) (alert x)))
-(_.each {one 1 two 2 three 3} (fn (x) (alert x)))
-
-(_.map [1 2 3] (fn (x) (* x 3)))
-(_.map {one 1 two 2 three 3} (fn (x) (* x 3)))
-
-(= sum (_.reduce [1 2 3] (fn (memo x) (+ memo x)) 0))
-
-(= list [[0 1] [2 3] [4 5]]
-   flat (_.reduceRight list (fn (a b) (.. a (concat b))) []))
-
-(= even (_.detect [1 2 3 4 5 6] (fn (x) (== (% x 2) 0))))
-
-; alias select
-(= evens (_.filter [1 2 3 4 5 6] (fn (x) (== (% x 2) 0))))
-
-(= odds (_.reject [1 2 3 4 5 6] (fn (x) (== (% x 2) 0))))
-
-(_.all [true 1 null "yes"])
-
-(_.any [true 1 null "yes"])
-
-(_.include [1 2 3] 3)
-
-(_.invoke [[5 1 7] [3 2 1]] "sort")
-
-(let stooges [{name "moe" age 40} {name "larry" age 50}
-              {name "curly" age 60}]
-  (_.pluck stooges "name"))
-
-(let stooges [{name "moe" age 40} {name "larry" age 50}
-              {name "curly" age 60}]
-  (_.max stooges (fn (stooge) stooge.age)))
-
-(let numbers [10 5 100 2 1000]
-  (_.min numbers))
-
-(_.sortBy [1 2 3 4 5 6] (fn (x) (Math.sin x)))
-
-(_.sortedIndex [10 20 30 40 50] 35)
-
-((fn () (_.toArray arguments (slice 0))) 1 2 3)
-
-(_.size {one 1 two 2 three 3})
-
-; Function (uh, ahem) Functions
-
-(let f (fn (greeting)
-         (+ greeting ": " this.name))
-  (= f (_.bind f {name "moe"} "hi"))
-  (f))
-
-; Example program
-; Compiled output goes in static/sweet-example.js, which
-; is linked to from static/sweet-example.html
-; Depends on underscore.js and jQuery
-
-(= word "hello"
-   wordTemplate (_.template ($ "#word-template" (html))))
-
-($ "body" (append (wordTemplate {word word})))
-
-
-)) 
+; ; macros
+; 
+; (js `(do
+; 
+; (mac let (var val . body)
+;   (w/uniq gvar
+;     `(do (= ,gvar ,val)
+;          ,@(tree-subst var gvar body))))
+; 
+; (mac with (parms . body)
+;   (if (no parms) 
+;       `(do ,@body)
+;       `(let ,(car parms) ,(cadr parms) 
+;          (with ,(cddr parms) ,@body))))
+; 
+; (mac when (test . body)
+;   `(if ,test (do ,@body)))
+; 
+; (mac unless (test . body)
+;   `(if (! ,test) (do ,@body)))
+; 
+; (mac until (test . body)
+;   `(while (! ,test) ,@body))
+; 
+; (mac def (name parms . body)
+;   `(= ,name (fn ,parms ,@body)))
+; 
+; ; html templating system inspired by html.arc
+; ;
+; ; sweet> (tag input (type "text")
+; ;          (tag ul ()
+; ;            (tag li () "apples")
+; ;            (tag li () "bananas")))
+; ; (('<'+'input'+' '+('type'+'='+'\'text\''+' ')+'>')+(('<'+'ul'+'>')+(('<'+'li'+'>')+'apples'+('</'+'li'+'>'))+(('<'+'li'+'>')+'bananas'+('</'+'li'+'>'))+('</'+'ul'+'>'))+('</'+'input'+'>'));
+; 
+; (mac parse-attrs (attrs)
+;   (let acc nil
+;     (each (k v) (pair attrs)
+;       (= acc (+ acc `(',k "=" ',v " "))))
+;     (push '+ acc)
+;     acc))
+; 
+; (mac start-tag (spec attrs)
+;   (if (no attrs)
+;       `(+ "<" ',spec ">")
+;       `(+ "<" ',spec " " (parse-attrs ,attrs) ">")))
+; 
+; (mac end-tag (spec)
+;   `(+ "</" ',spec ">"))
+; 
+; (mac tag (spec attrs . body)
+;   `(+ (start-tag ,spec ,attrs)
+;       ,@body
+;       (end-tag ,spec)))
+; 
+; ; jQuery helper macro
+; ;  Example usage: ($ "p.neat"
+; ;                   (addClass "ohmy")
+; ;                   (show "slow"))
+; 
+; (mac $ (selector . args)
+;   `(.. (jQuery ,selector) ,@args))
+; 
+; ; Examples from http://documentcloud.github.com/underscore/#styles
+; 
+; ; Collections
+; 
+; (_.each [1 2 3] (fn (x) (alert x)))
+; (_.each {one 1 two 2 three 3} (fn (x) (alert x)))
+; 
+; (_.map [1 2 3] (fn (x) (* x 3)))
+; (_.map {one 1 two 2 three 3} (fn (x) (* x 3)))
+; 
+; (= sum (_.reduce [1 2 3] (fn (memo x) (+ memo x)) 0))
+; 
+; (= list [[0 1] [2 3] [4 5]]
+;    flat (_.reduceRight list (fn (a b) (.. a (concat b))) []))
+; 
+; (= even (_.detect [1 2 3 4 5 6] (fn (x) (== (% x 2) 0))))
+; 
+; ; alias select
+; (= evens (_.filter [1 2 3 4 5 6] (fn (x) (== (% x 2) 0))))
+; 
+; (= odds (_.reject [1 2 3 4 5 6] (fn (x) (== (% x 2) 0))))
+; 
+; (_.all [true 1 null "yes"])
+; 
+; (_.any [true 1 null "yes"])
+; 
+; (_.include [1 2 3] 3)
+; 
+; (_.invoke [[5 1 7] [3 2 1]] "sort")
+; 
+; (let stooges [{name "moe" age 40} {name "larry" age 50}
+;               {name "curly" age 60}]
+;   (_.pluck stooges "name"))
+; 
+; (let stooges [{name "moe" age 40} {name "larry" age 50}
+;               {name "curly" age 60}]
+;   (_.max stooges (fn (stooge) stooge.age)))
+; 
+; (let numbers [10 5 100 2 1000]
+;   (_.min numbers))
+; 
+; (_.sortBy [1 2 3 4 5 6] (fn (x) (Math.sin x)))
+; 
+; (_.sortedIndex [10 20 30 40 50] 35)
+; 
+; ((fn () (_.toArray arguments (slice 0))) 1 2 3)
+; 
+; (_.size {one 1 two 2 three 3})
+; 
+; ; Function (uh, ahem) Functions
+; 
+; (let f (fn (greeting)
+;          (+ greeting ": " this.name))
+;   (= f (_.bind f {name "moe"} "hi"))
+;   (f))
+; 
+; ; Example program
+; ; Compiled output goes in static/sweet-example.js, which
+; ; is linked to from static/sweet-example.html
+; ; Depends on underscore.js and jQuery
+; 
+; (= word "hello"
+;    wordTemplate (_.template ($ "#word-template" (html))))
+; 
+; ($ "body" (append (wordTemplate {word word})))
+; 
+; 
+; )) 
