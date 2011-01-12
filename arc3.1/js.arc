@@ -352,10 +352,24 @@
 ; is linked to from static/sweet-example.html
 ; Depends on underscore.js and jQuery
 
-(= word "hello"
-   wordTemplate (_.template ($ "#word-template" (html))))
+(do
 
-($ "body" (append (wordTemplate {word word})))
+(= xs [])
+
+(def render ()
+  ($ "#xs" (empty))
+  (_.each xs (fn (x)
+               ($ "#xs" (append (tag div () x))))))
+
+($ (tag input ())
+   (change (fn ()
+             (xs.unshift ($ this (val)))
+             ($ this (val ""))
+             (render)))
+   (appendTo "body"))
+
+($ (tag div (id "xs"))
+   (appendTo "body")))
 
 
 )) 
