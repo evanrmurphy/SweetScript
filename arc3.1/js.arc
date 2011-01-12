@@ -14,7 +14,7 @@
 
   (def js-q ()
     (repeat nest-lev (pr #\\))
-    (pr #\')) 
+    (pr #\")) 
 
   (def js-open-q ()
     (js-q)
