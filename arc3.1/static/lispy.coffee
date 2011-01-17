@@ -90,15 +90,19 @@ atom = (token) ->
   null
 
 ToString = (exp) ->
-  # works?
   if isa exp, list
-    '('+' '.join(_(exp).map ToString)+')'
+    '(' + (_(exp).map ToString).join(' ') + ')'
   else
-    exp.toString
+    exp.toString()
 
-repl = (prompt='lis.py> ') ->
-  while True
-    # incomplete: raw_input
-    val = eval(parse(raw_input(prompt)))
-    # incomplete: print
-    if val is not null then print ToString val
+repl = (Prompt='lis.py> ') ->
+  while val != '(quit)'
+    # val = eval(parse(prompt Prompt))
+    val = prompt Prompt
+    # if val is not null then alert(ToString val)
+    if true then alert(val)
+
+window.repl = repl
+window.parse = parse
+window.tokenize = tokenize
+window.ToString = ToString

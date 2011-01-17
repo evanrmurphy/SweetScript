@@ -127,21 +127,25 @@
   };
   ToString = function(exp) {
     if (isa(exp, list)) {
-      return '(' + ' '.join(_(exp).map(ToString)) + ')';
+      return '(' + (_(exp).map(ToString)).join(' ') + ')';
     } else {
-      return exp.toString;
+      return exp.toString();
     }
   };
-  repl = function(prompt) {
+  repl = function(Prompt) {
     var val, _results;
-    if (prompt == null) {
-      prompt = 'lis.py> ';
+    if (Prompt == null) {
+      Prompt = 'lis.py> ';
     }
     _results = [];
-    while (True) {
-      val = eval(parse(raw_input(prompt)));
-      _results.push(val === !null ? print(ToString(val)) : void 0);
+    while (val !== '(quit)') {
+      val = prompt(Prompt);
+      _results.push(true ? alert(val) : void 0);
     }
     return _results;
   };
+  window.repl = repl;
+  window.parse = parse;
+  window.tokenize = tokenize;
+  window.ToString = ToString;
 }).call(this);
