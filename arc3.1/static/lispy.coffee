@@ -1,8 +1,9 @@
-# http://norvig.com/lispy.html
+# JavaScript port of http://norvig.com/lispy.html
 
 ################ Symbol, Procedure, Env classes
 
-# http://javascript.crockford.com/remedial.html
+# Borrowed from http://javascript.crockford.com/remedial.html
+# to help distinguish arrays from other objects
 typeOf = (value) ->
   s = typeof value
   if s is 'object'
@@ -63,21 +64,22 @@ Eval = (x, env=globalEnv) ->
 ################ parse, read, and user interaction
 
 read = (s) ->
-  read_from tokenize(s)
-
-parse = read
+  readFrom tokenize(s)
 
 tokenize = (s) ->
-  s.replace('(',' ( ').replace(')',' ) ').split(' ')
+  _(s.replace('(',' ( ')
+     .replace(')',' ) ')
+     .split(' ')).without('')
 
-read_from = (tokens) ->
+
+readFrom = (tokens) ->
   if tokens.length == 0
     alert 'unexpected EOF while reading'
   token = tokens.shift()
   if '(' == token
     L = []
     while tokens[0] != ')'
-      L.push(read_from tokens)
+      L.push(readFrom tokens)
     tokens.shift() # pop off ')'
     L
   else if ')' == token
@@ -85,9 +87,9 @@ read_from = (tokens) ->
   else
     atom token
 
+# Still needs to distinguish numbers from symbols
 atom = (token) ->
-  # incomplete
-  null
+  token.toString()
 
 ToString = (exp) ->
   if isa exp, list
@@ -95,14 +97,17 @@ ToString = (exp) ->
   else
     exp.toString()
 
-repl = (Prompt='lis.py> ') ->
-  while val != '(quit)'
-    # val = eval(parse(prompt Prompt))
-    val = prompt Prompt
-    # if val is not null then alert(ToString val)
-    if true then alert(val)
+# Could use better UI than prompt + alert
+repl = (p='lis.py> ') ->
+  while input != '(quit)'
+    input = (prompt p)
+    val = Eval(read input)
+    alert(ToString val)
 
 window.repl = repl
-window.parse = parse
+window.read = read
 window.tokenize = tokenize
 window.ToString = ToString
+window.atom = atom
+
+repl()
