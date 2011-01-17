@@ -67,41 +67,36 @@
   };
   globalEnv = addGlobals(new Env);
   Eval = function(x, env) {
-    var Var, alt, conseq, exp, exps, proc, test, val, vars, _, _i, _j, _len, _len2, _ref, _results;
+    var Var, alt, branch, conseq, exp, exps, proc, scope, test, val, vars, _, _i, _j, _len, _len2, _ref, _results;
     if (env == null) {
       env = globalEnv;
     }
-    console.log('in Eval');
-    console.log('x is', x);
-    console.log('env is', env);
     if (isa(x, Symbol)) {
-      console.log('variable reference');
       return env.find(x)[x];
     } else if (!isa(x, list)) {
-      console.log('constant literal');
       return x;
     } else if (x[0] === 'quote') {
       _ = x[0], exp = x[1];
       return exp;
     } else if (x[0] === 'if') {
       _ = x[0], test = x[1], conseq = x[2], alt = x[3];
-      return Eval((Eval(test, env) ? conseq : alt), env);
+      branch = (Eval(test, env) ? conseq : alt);
+      return Eval(branch, env);
     } else if (x[0] === '=') {
-      console.log('(= var exp)');
       _ = x[0], Var = x[1], exp = x[2];
-      if (env.find(Var)) {
-        return env.find(Var)[Var] = Eval(exp, env);
-      } else {
-        return env[Var] = Eval(exp, env);
-      }
+      scope = (env.find(Var) ? env.find(Var) : globalEnv);
+      return scope[Var] = Eval(exp, env);
     } else if (x[0] === 'fn') {
       _ = x[0], vars = x[1], exp = x[2];
       return function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        return Eval(exp, Env(vars, args, env));
+        return Eval(exp, new Env(vars, args, env));
       };
     } else if (x[0] === 'do') {
+      console.log('(do exp*)');
+      console.log('x = ', x);
+      console.log('env = ', env);
       _ref = x.slice(1);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         exp = _ref[_i];
@@ -109,7 +104,6 @@
       }
       return val;
     } else {
-      console.log('(proc exp*)');
       exps = (function() {
         _results = [];
         for (_j = 0, _len2 = x.length; _j < _len2; _j++) {
@@ -119,8 +113,6 @@
         return _results;
       }());
       proc = exps.shift();
-      console.log('proc is', proc);
-      console.log('exps is', exps);
       return proc.apply(proc, exps);
     }
   };
@@ -129,7 +121,9 @@
   };
   parse = read;
   tokenize = function(s) {
-    return _(s.replace('(', ' ( ').replace(')', ' ) ').split(' ')).without('');
+    var spaced;
+    spaced = s.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ').split(' ');
+    return _(spaced).without('');
   };
   readFrom = function(tokens) {
     var L, token;

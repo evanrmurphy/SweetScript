@@ -1,4 +1,4 @@
-# JavaScript port of http://norvig.com/lispy.html
+# Used as a guide: http://norvig.com/lispy.html
 
 # Borrowed from http://javascript.crockford.com/remedial.html
 # to help distinguish arrays from other objects
@@ -42,40 +42,33 @@ globalEnv = addGlobals(new Env)
 ################ Eval
 
 Eval = (x, env=globalEnv) ->
-  console.log 'in Eval'
-  console.log 'x is', x
-  console.log 'env is', env
   if isa x, Symbol              # variable reference
-    console.log 'variable reference'
     env.find(x)[x]
   else if not isa x, list       # constant literal
-    console.log 'constant literal'
     x
   else if x[0] is 'quote'       # (quote exp)
     [_, exp] = x
     exp
   else if x[0] is 'if'          # (if test conseq alt)
     [_, test, conseq, alt] = x
-    Eval (if Eval(test, env) then conseq else alt), env
+    branch = (if Eval(test, env) then conseq else alt)
+    Eval branch, env
   else if x[0] is '='           # (= var exp)
-    console.log '(= var exp)'
     [_, Var, exp] = x
-    if env.find(Var)
-      env.find(Var)[Var] = Eval exp, env
-    else
-      env[Var] = Eval exp, env
+    scope = (if env.find(Var) then env.find(Var) else globalEnv)
+    scope[Var] = Eval exp, env
   else if x[0] is 'fn'          # (fn (var*) exp)
     [_, vars, exp] = x
-    (args...) -> Eval exp, Env(vars, args, env) # should be new Env(vars...?
+    (args...) -> Eval exp, new Env(vars, args, env)
   else if x[0] is 'do'          # (do exp*)
+    console.log '(do exp*)'
+    console.log 'x = ', x
+    console.log 'env = ', env
     val = Eval(exp, env) for exp in x[1..]
     val
   else                          # (proc exp*)
-    console.log '(proc exp*)'
     exps = (Eval(exp, env) for exp in x)
     proc = exps.shift()
-    console.log 'proc is', proc
-    console.log 'exps is', exps
     proc exps...
 
 ################ parse, read and user interaction
@@ -86,7 +79,8 @@ read = (s) ->
 parse = read
 
 tokenize = (s) ->
-  _(s.replace('(',' ( ').replace(')',' ) ').split(' ')).without('')
+  spaced = s.replace(/\(/g,' ( ').replace(/\)/g,' ) ').split(' ')
+  _(spaced).without('') # purge of empty string tokens
 
 readFrom = (tokens) ->
   if tokens.length == 0
