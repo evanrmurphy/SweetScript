@@ -29,14 +29,27 @@ class Env
   find: (Var) ->
     if Var of this then this else @outer.find(Var)
 
-globalEnv = new Env
+addGlobals = (env) ->
+  _(env).extend
+    '+': (x,y) -> x+y
+    'cons': (x,y) -> [x].concat(y)
+    'car': (xs) -> xs[0]
+    'cdr': (xs) -> xs[1..]
+  env
+
+globalEnv = addGlobals(new Env)
 
 ################ Eval
 
 Eval = (x, env=globalEnv) ->
+  console.log 'in Eval'
+  console.log 'x is', x
+  console.log 'env is', env
   if isa x, Symbol              # variable reference
+    console.log 'variable reference'
     env.find(x)[x]
   else if isa x, list           # constant literal
+    console.log 'constant literal'
     x
   else if x[0] is 'quote'       # (quote exp)
     [_, exp] = x
@@ -45,6 +58,7 @@ Eval = (x, env=globalEnv) ->
     [_, test, conseq, alt] = x
     Eval (if Eval(test, env) then conseq else alt), env
   else if x[0] is '='           # (= var exp)
+    console.log '(= var exp)'
     [_, Var, exp] = x
     env.find(Var)[Var] = Eval exp, env
   else if x[0] is 'define'      # (define var exp)
@@ -57,11 +71,12 @@ Eval = (x, env=globalEnv) ->
     val = Eval(exp, env) for exp in x[1..]
     val
   else                          # (proc exp*)
+    console.log '(proc exp*)'
     exps = (Eval exp, env for exp in x)
     proc = exps.shift()
     proc exps
 
-################ parse, read, and user interaction
+################ read and user interaction
 
 read = (s) ->
   readFrom tokenize(s)
@@ -106,5 +121,8 @@ window.read = read
 window.tokenize = tokenize
 window.ToString = ToString
 window.atom = atom
+window.Env = Env
+window.globalEnv = globalEnv
+window.Eval = Eval
 
 repl()

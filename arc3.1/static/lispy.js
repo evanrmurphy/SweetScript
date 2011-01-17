@@ -1,5 +1,5 @@
 (function() {
-  var Env, Eval, Symbol, ToString, atom, globalEnv, isa, list, read, readFrom, repl, tokenize, typeOf;
+  var Env, Eval, Symbol, ToString, addGlobals, atom, globalEnv, isa, list, read, readFrom, repl, tokenize, typeOf;
   var __slice = Array.prototype.slice;
   typeOf = function(value) {
     var s;
@@ -47,15 +47,37 @@
     };
     return Env;
   }();
-  globalEnv = new Env;
+  addGlobals = function(env) {
+    _(env).extend({
+      '+': function(x, y) {
+        return x + y;
+      },
+      'cons': function(x, y) {
+        return [x].concat(y);
+      },
+      'car': function(xs) {
+        return xs[0];
+      },
+      'cdr': function(xs) {
+        return xs.slice(1);
+      }
+    });
+    return env;
+  };
+  globalEnv = addGlobals(new Env);
   Eval = function(x, env) {
     var Var, alt, conseq, exp, exps, proc, test, val, vars, _, _i, _j, _len, _len2, _ref, _results;
     if (env == null) {
       env = globalEnv;
     }
+    console.log('in Eval');
+    console.log('x is', x);
+    console.log('env is', env);
     if (isa(x, Symbol)) {
+      console.log('variable reference');
       return env.find(x)[x];
     } else if (isa(x, list)) {
+      console.log('constant literal');
       return x;
     } else if (x[0] === 'quote') {
       _ = x[0], exp = x[1];
@@ -64,6 +86,7 @@
       _ = x[0], test = x[1], conseq = x[2], alt = x[3];
       return Eval((Eval(test, env) ? conseq : alt), env);
     } else if (x[0] === '=') {
+      console.log('(= var exp)');
       _ = x[0], Var = x[1], exp = x[2];
       return env.find(Var)[Var] = Eval(exp, env);
     } else if (x[0] === 'define') {
@@ -84,6 +107,7 @@
       }
       return val;
     } else {
+      console.log('(proc exp*)');
       exps = (function() {
         _results = [];
         for (_j = 0, _len2 = x.length; _j < _len2; _j++) {
@@ -149,5 +173,8 @@
   window.tokenize = tokenize;
   window.ToString = ToString;
   window.atom = atom;
+  window.Env = Env;
+  window.globalEnv = globalEnv;
+  window.Eval = Eval;
   repl();
 }).call(this);
