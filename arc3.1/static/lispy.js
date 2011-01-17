@@ -1,5 +1,5 @@
 (function() {
-  var Env, Eval, Symbol, isa, list, typeOf;
+  var Env, Eval, Symbol, globalEnv, isa, list, typeOf;
   var __slice = Array.prototype.slice;
   typeOf = function(value) {
     var s;
@@ -47,6 +47,7 @@
     };
     return Env;
   }();
+  globalEnv = new Env;
   Eval = function(x, env) {
     var Var, alt, conseq, exp, exps, proc, test, val, vars, _, _i, _j, _len, _len2, _ref, _results;
     if (env == null) {

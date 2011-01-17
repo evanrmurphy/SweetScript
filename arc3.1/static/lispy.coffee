@@ -26,6 +26,8 @@ class Env
   find: (Var) ->
     if Var of this then this else @outer.find(Var)
 
+globalEnv = new Env
+
 Eval = (x, env=globalEnv) ->
   if isa x, Symbol              # variable reference
     env.find(x)[x]
