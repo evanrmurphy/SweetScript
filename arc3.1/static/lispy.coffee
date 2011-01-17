@@ -48,7 +48,7 @@ Eval = (x, env=globalEnv) ->
   if isa x, Symbol              # variable reference
     console.log 'variable reference'
     env.find(x)[x]
-  else if not isa x, list           # constant literal
+  else if not isa x, list       # constant literal
     console.log 'constant literal'
     x
   else if x[0] is 'quote'       # (quote exp)
@@ -66,7 +66,7 @@ Eval = (x, env=globalEnv) ->
     env[Var] = Eval exp, env
   else if x[0] is 'fn'          # (fn (var*) exp)
     [_, vars, exp] = x
-    (args...) -> Eval exp, Env(vars, args, env)
+    (args...) -> Eval exp, Env(vars, args, env) # should be new Env(vars...?
   else if x[0] is 'do'          # (do exp*)
     val = Eval(exp, env) for exp in x[1..]
     val
@@ -76,10 +76,12 @@ Eval = (x, env=globalEnv) ->
     proc = exps.shift()
     proc exps
 
-################ read and user interaction
+################ parse, read and user interaction
 
 read = (s) ->
   readFrom tokenize(s)
+
+parse = read
 
 tokenize = (s) ->
   _(s.replace('(',' ( ').replace(')',' ) ').split(' ')).without('')
@@ -101,7 +103,12 @@ readFrom = (tokens) ->
 
 # Still needs to distinguish numbers from symbols
 atom = (token) ->
-  token.toString()
+  if token.match /^\d+\.?$/
+    parseInt token
+  else if token.match /^\d*\.\d+$/
+    parseFloat token
+  else
+    "#{token}"
 
 ToString = (exp) ->
   if isa exp, list
@@ -113,11 +120,12 @@ ToString = (exp) ->
 repl = (p='lis.py> ') ->
   while input != '(quit)'
     input = (prompt p)
-    val = Eval(read input)
+    val = Eval(parse input)
     alert(ToString val)
 
 window.repl = repl
 window.read = read
+window.parse = parse
 window.tokenize = tokenize
 window.ToString = ToString
 window.atom = atom

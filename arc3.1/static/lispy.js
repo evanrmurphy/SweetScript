@@ -1,5 +1,5 @@
 (function() {
-  var Env, Eval, Symbol, ToString, addGlobals, atom, globalEnv, isa, list, read, readFrom, repl, tokenize, typeOf;
+  var Env, Eval, Symbol, ToString, addGlobals, atom, globalEnv, isa, list, parse, read, readFrom, repl, tokenize, typeOf;
   var __slice = Array.prototype.slice;
   typeOf = function(value) {
     var s;
@@ -123,6 +123,7 @@
   read = function(s) {
     return readFrom(tokenize(s));
   };
+  parse = read;
   tokenize = function(s) {
     return _(s.replace('(', ' ( ').replace(')', ' ) ').split(' ')).without('');
   };
@@ -146,7 +147,13 @@
     }
   };
   atom = function(token) {
-    return token.toString();
+    if (token.match(/^\d+\.?$/)) {
+      return parseInt(token);
+    } else if (token.match(/^\d*\.\d+$/)) {
+      return parseFloat(token);
+    } else {
+      return "" + token;
+    }
   };
   ToString = function(exp) {
     if (isa(exp, list)) {
@@ -163,13 +170,14 @@
     _results = [];
     while (input !== '(quit)') {
       input = prompt(p);
-      val = Eval(read(input));
+      val = Eval(parse(input));
       _results.push(alert(ToString(val)));
     }
     return _results;
   };
   window.repl = repl;
   window.read = read;
+  window.parse = parse;
   window.tokenize = tokenize;
   window.ToString = ToString;
   window.atom = atom;
