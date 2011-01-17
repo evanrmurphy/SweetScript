@@ -27,7 +27,7 @@ class Env
       this[key] = val
     @outer = outer
   find: (Var) ->
-    if Var of this then this else @outer.find(Var)
+    if Var of this then this else @outer?.find(Var)
 
 addGlobals = (env) ->
   _(env).extend
@@ -60,10 +60,7 @@ Eval = (x, env=globalEnv) ->
   else if x[0] is '='           # (= var exp)
     console.log '(= var exp)'
     [_, Var, exp] = x
-    env.find(Var)[Var] = Eval exp, env
-  else if x[0] is 'define'      # (define var exp)
-    [_, Var, exp] = x
-    env[Var] = Eval exp, env
+    (if env.find(Var) then env.find(Var)[Var] else env[Var]) = Eval(exp, env)
   else if x[0] is 'fn'          # (fn (var*) exp)
     [_, vars, exp] = x
     (args...) -> Eval exp, Env(vars, args, env) # should be new Env(vars...?
