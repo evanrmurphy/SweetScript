@@ -1,5 +1,7 @@
 # http://norvig.com/lispy.html
 
+################ Symbol, Procedure, Env classes
+
 # http://javascript.crockford.com/remedial.html
 typeOf = (value) ->
   s = typeof value
@@ -28,6 +30,8 @@ class Env
 
 globalEnv = new Env
 
+################ Eval
+
 Eval = (x, env=globalEnv) ->
   if isa x, Symbol              # variable reference
     env.find(x)[x]
@@ -55,3 +59,46 @@ Eval = (x, env=globalEnv) ->
     exps = (Eval exp, env for exp in x)
     proc = exps.shift()
     proc exps
+
+################ parse, read, and user interaction
+
+read = (s) ->
+  read_from tokenize(s)
+
+parse = read
+
+tokenize = (s) ->
+  s.replace('(',' ( ').replace(')',' ) ').split(' ')
+
+read_from = (tokens) ->
+  if tokens.length == 0
+    alert 'unexpected EOF while reading'
+  token = tokens.shift()
+  if '(' == token
+    L = []
+    while tokens[0] != ')'
+      L.push(read_from tokens)
+    tokens.shift() # pop off ')'
+    L
+  else if ')' == token
+    alert 'unexpected )'
+  else
+    atom token
+
+atom = (token) ->
+  # incomplete
+  null
+
+ToString = (exp) ->
+  # works?
+  if isa exp, list
+    '('+' '.join(_(exp).map ToString)+')'
+  else
+    exp.toString
+
+repl = (prompt='lis.py> ') ->
+  while True
+    # incomplete: raw_input
+    val = eval(parse(raw_input(prompt)))
+    # incomplete: print
+    if val is not null then print ToString val

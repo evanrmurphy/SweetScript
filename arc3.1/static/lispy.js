@@ -1,5 +1,5 @@
 (function() {
-  var Env, Eval, Symbol, globalEnv, isa, list, typeOf;
+  var Env, Eval, Symbol, ToString, atom, globalEnv, isa, list, parse, read, read_from, repl, tokenize, typeOf;
   var __slice = Array.prototype.slice;
   typeOf = function(value) {
     var s;
@@ -95,5 +95,53 @@
       proc = exps.shift();
       return proc(exps);
     }
+  };
+  read = function(s) {
+    return read_from(tokenize(s));
+  };
+  parse = read;
+  tokenize = function(s) {
+    return s.replace('(', ' ( ').replace(')', ' ) ').split(' ');
+  };
+  read_from = function(tokens) {
+    var L, token;
+    if (tokens.length === 0) {
+      alert('unexpected EOF while reading');
+    }
+    token = tokens.shift();
+    if ('(' === token) {
+      L = [];
+      while (tokens[0] !== ')') {
+        L.push(read_from(tokens));
+      }
+      tokens.shift();
+      return L;
+    } else if (')' === token) {
+      return alert('unexpected )');
+    } else {
+      return atom(token);
+    }
+  };
+  atom = function(token) {
+    return null;
+  };
+  ToString = function(exp) {
+    if (isa(exp, list)) {
+      return '(' + ' '.join(_(exp).map(ToString)) + ')';
+    } else {
+      return exp.toString;
+    }
+  };
+  repl = function(prompt) {
+    var val, _results;
+    if (prompt == null) {
+      prompt = 'lis.py> ';
+    }
+    _results = [];
+    while (True) {
+      val = eval(parse(raw_input(prompt)));
+      _results.push(val === !null ? print(ToString(val)) : void 0);
+    }
+    return _results;
   };
 }).call(this);
