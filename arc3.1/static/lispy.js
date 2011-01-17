@@ -117,7 +117,9 @@
         return _results;
       }());
       proc = exps.shift();
-      return proc(exps);
+      console.log('proc is', proc);
+      console.log('exps is', exps);
+      return proc.apply(proc, exps);
     }
   };
   read = function(s) {

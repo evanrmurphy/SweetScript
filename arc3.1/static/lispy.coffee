@@ -72,9 +72,11 @@ Eval = (x, env=globalEnv) ->
     val
   else                          # (proc exp*)
     console.log '(proc exp*)'
-    exps = (Eval exp, env for exp in x)
+    exps = (Eval(exp, env) for exp in x)
     proc = exps.shift()
-    proc exps
+    console.log 'proc is', proc
+    console.log 'exps is', exps
+    proc exps...
 
 ################ parse, read and user interaction
 
