@@ -67,10 +67,7 @@ read = (s) ->
   readFrom tokenize(s)
 
 tokenize = (s) ->
-  _(s.replace('(',' ( ')
-     .replace(')',' ) ')
-     .split(' ')).without('')
-
+  _(s.replace('(',' ( ').replace(')',' ) ').split(' ')).without('')
 
 readFrom = (tokens) ->
   if tokens.length == 0
