@@ -50,8 +50,14 @@
   }();
   addGlobals = function(env) {
     _(env).extend({
-      '+': function(x, y) {
-        return x + y;
+      '+': function() {
+        var acc, args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        acc = 0;
+        _(args).each(function(x) {
+          return acc += x;
+        });
+        return acc;
       },
       'cons': function(x, y) {
         return [x].concat(y);
@@ -94,9 +100,6 @@
         return Eval(exp, new Env(vars, args, env));
       };
     } else if (x[0] === 'do') {
-      console.log('(do exp*)');
-      console.log('x = ', x);
-      console.log('env = ', env);
       _ref = x.slice(1);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         exp = _ref[_i];

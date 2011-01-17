@@ -31,7 +31,10 @@ class Env
 
 addGlobals = (env) ->
   _(env).extend
-    '+': (x,y) -> x+y
+    '+': (args...) ->
+      acc = 0
+      _(args).each (x) -> acc += x
+      acc
     'cons': (x,y) -> [x].concat(y)
     'car': (xs) -> xs[0]
     'cdr': (xs) -> xs[1..]
@@ -61,9 +64,6 @@ Eval = (x, env=globalEnv) ->
     [_, vars, exp] = x
     (args...) -> Eval exp, new Env(vars, args, env)
   else if x[0] is 'do'          # (do exp*)
-    console.log '(do exp*)'
-    console.log 'x = ', x
-    console.log 'env = ', env
     val = Eval(exp, env) for exp in x[1..]
     val
   else                          # (proc exp*)
@@ -97,7 +97,6 @@ readFrom = (tokens) ->
   else
     atom token
 
-# Still needs to distinguish numbers from symbols
 atom = (token) ->
   if token.match /^\d+\.?$/
     parseInt token
@@ -112,7 +111,6 @@ ToString = (exp) ->
   else
     exp.toString()
 
-# Could use better UI than prompt + alert
 repl = (p='sweet> ') ->
   while input != '(quit)'
     input = (prompt p)
