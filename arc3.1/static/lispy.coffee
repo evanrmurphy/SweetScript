@@ -1,7 +1,5 @@
 # JavaScript port of http://norvig.com/lispy.html
 
-################ Symbol, Procedure, Env classes
-
 # Borrowed from http://javascript.crockford.com/remedial.html
 # to help distinguish arrays from other objects
 typeOf = (value) ->
@@ -16,6 +14,8 @@ typeOf = (value) ->
 
 isa = (x, y) ->
   typeOf(x) is y
+
+################ Symbol, Procedure, Env classes
 
 Symbol = "string"
 list = "array"
@@ -48,7 +48,7 @@ Eval = (x, env=globalEnv) ->
   if isa x, Symbol              # variable reference
     console.log 'variable reference'
     env.find(x)[x]
-  else if isa x, list           # constant literal
+  else if not isa x, list           # constant literal
     console.log 'constant literal'
     x
   else if x[0] is 'quote'       # (quote exp)

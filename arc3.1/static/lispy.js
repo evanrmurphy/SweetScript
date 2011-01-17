@@ -76,7 +76,7 @@
     if (isa(x, Symbol)) {
       console.log('variable reference');
       return env.find(x)[x];
-    } else if (isa(x, list)) {
+    } else if (!isa(x, list)) {
       console.log('constant literal');
       return x;
     } else if (x[0] === 'quote') {
