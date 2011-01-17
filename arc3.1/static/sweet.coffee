@@ -29,11 +29,24 @@ class Env
   find: (Var) ->
     if Var of this then this else @outer?.find(Var)
 
+# This will grow fast, should move to separate file or something
 addGlobals = (env) ->
   _(env).extend
     '+': (args...) ->
       acc = 0
       _(args).each (x) -> acc += x
+      acc
+    '-': (args...) ->
+      acc = args[0]
+      _(args[1..]).each (x) -> acc -= x
+      acc
+    '*': (args...) ->
+      acc = 1
+      _(args).each (x) -> acc *= x
+      acc
+    '/': (args...) ->
+      acc = args[0]
+      _(args[1..]).each (x) -> acc /= x
       acc
     'cons': (x,y) -> [x].concat(y)
     'car': (xs) -> xs[0]
@@ -112,10 +125,11 @@ ToString = (exp) ->
     exp.toString()
 
 repl = (p='sweet> ') ->
-  while input != '(quit)'
-    input = (prompt p)
-    val = Eval(parse input)
+  while true
+    val = Eval(parse(prompt p))
     alert(ToString val)
+
+sweet = (exp) -> Eval(parse exp)
 
 window.repl = repl
 window.read = read
@@ -126,5 +140,6 @@ window.atom = atom
 window.Env = Env
 window.globalEnv = globalEnv
 window.Eval = Eval
+window.sweet = sweet
 
-repl()
+# repl()

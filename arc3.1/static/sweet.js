@@ -1,5 +1,5 @@
 (function() {
-  var Env, Eval, Symbol, ToString, addGlobals, atom, globalEnv, isa, list, parse, read, readFrom, repl, tokenize, typeOf;
+  var Env, Eval, Symbol, ToString, addGlobals, atom, globalEnv, isa, list, parse, read, readFrom, repl, sweet, tokenize, typeOf;
   var __slice = Array.prototype.slice;
   typeOf = function(value) {
     var s;
@@ -56,6 +56,33 @@
         acc = 0;
         _(args).each(function(x) {
           return acc += x;
+        });
+        return acc;
+      },
+      '-': function() {
+        var acc, args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        acc = args[0];
+        _(args.slice(1)).each(function(x) {
+          return acc -= x;
+        });
+        return acc;
+      },
+      '*': function() {
+        var acc, args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        acc = 1;
+        _(args).each(function(x) {
+          return acc *= x;
+        });
+        return acc;
+      },
+      '/': function() {
+        var acc, args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        acc = args[0];
+        _(args.slice(1)).each(function(x) {
+          return acc /= x;
         });
         return acc;
       },
@@ -164,17 +191,19 @@
     }
   };
   repl = function(p) {
-    var input, val, _results;
+    var val, _results;
     if (p == null) {
       p = 'sweet> ';
     }
     _results = [];
-    while (input !== '(quit)') {
-      input = prompt(p);
-      val = Eval(parse(input));
+    while (true) {
+      val = Eval(parse(prompt(p)));
       _results.push(alert(ToString(val)));
     }
     return _results;
+  };
+  sweet = function(exp) {
+    return Eval(parse(exp));
   };
   window.repl = repl;
   window.read = read;
@@ -185,5 +214,5 @@
   window.Env = Env;
   window.globalEnv = globalEnv;
   window.Eval = Eval;
-  repl();
+  window.sweet = sweet;
 }).call(this);
