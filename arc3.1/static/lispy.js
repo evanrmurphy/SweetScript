@@ -63,20 +63,20 @@
     } else if (x[0] === 'if') {
       _ = x[0], test = x[1], conseq = x[2], alt = x[3];
       return Eval((Eval(test, env) ? conseq : alt), env);
-    } else if (x[0] === 'set!') {
+    } else if (x[0] === '=') {
       _ = x[0], Var = x[1], exp = x[2];
       return env.find(Var)[Var] = Eval(exp, env);
     } else if (x[0] === 'define') {
       _ = x[0], Var = x[1], exp = x[2];
       return env[Var] = Eval(exp, env);
-    } else if (x[0] === 'lambda') {
+    } else if (x[0] === 'fn') {
       _ = x[0], vars = x[1], exp = x[2];
       return function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         return Eval(exp, Env(vars, args, env));
       };
-    } else if (x[0] === 'begin') {
+    } else if (x[0] === 'do') {
       _ref = x.slice(1);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         exp = _ref[_i];

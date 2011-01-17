@@ -44,16 +44,16 @@ Eval = (x, env=globalEnv) ->
   else if x[0] is 'if'          # (if test conseq alt)
     [_, test, conseq, alt] = x
     Eval (if Eval(test, env) then conseq else alt), env
-  else if x[0] is 'set!'        # (set! var exp)
+  else if x[0] is '='           # (= var exp)
     [_, Var, exp] = x
     env.find(Var)[Var] = Eval exp, env
   else if x[0] is 'define'      # (define var exp)
     [_, Var, exp] = x
     env[Var] = Eval exp, env
-  else if x[0] is 'lambda'      # (lambda (var*) exp)
+  else if x[0] is 'fn'          # (fn (var*) exp)
     [_, vars, exp] = x
     (args...) -> Eval exp, Env(vars, args, env)
-  else if x[0] is 'begin'       # (begin exp*)
+  else if x[0] is 'do'          # (do exp*)
     val = Eval(exp, env) for exp in x[1..]
     val
   else                          # (proc exp*)
