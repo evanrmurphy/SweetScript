@@ -60,7 +60,10 @@ Eval = (x, env=globalEnv) ->
   else if x[0] is '='           # (= var exp)
     console.log '(= var exp)'
     [_, Var, exp] = x
-    (if env.find(Var) then env.find(Var)[Var] else env[Var]) = Eval(exp, env)
+    if env.find(Var)
+      env.find(Var)[Var] = Eval exp, env
+    else
+      env[Var] = Eval exp, env
   else if x[0] is 'fn'          # (fn (var*) exp)
     [_, vars, exp] = x
     (args...) -> Eval exp, Env(vars, args, env) # should be new Env(vars...?
@@ -116,7 +119,7 @@ ToString = (exp) ->
     exp.toString()
 
 # Could use better UI than prompt + alert
-repl = (p='lis.py> ') ->
+repl = (p='sweet> ') ->
   while input != '(quit)'
     input = (prompt p)
     val = Eval(parse input)
