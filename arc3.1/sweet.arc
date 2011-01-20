@@ -60,7 +60,6 @@
       (is car.x 'ival)    (apply ival cdr.x) ;(ival cadr.x e)
       (is car.x 'assign)  (env-set cadr.x (ival caddr.x e) e)
       (is car.x 'vau)     (fn args
-                            (ival cadddr.x (env (listtab:zip cadr.x args) caddr.x)))
-                          ;(apply (ival car.x e) (ival cddr.x e))
-                          (apply car.x cddr.x)
+                            (ival caddr.x (env (listtab:zip cadr.x args) e)))
+                          (apply (ival car.x e) cdr.x)
                           ))
