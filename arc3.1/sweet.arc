@@ -58,8 +58,10 @@
   (if (isa x 'sym)        (env-get x e)
       (~acons x)          x
       (is car.x 'ival)    (apply ival cdr.x) ;(ival cadr.x e)
-      (is car.x 'assign)  (env-set cadr.x (ival caddr.x e) e)
-      (is car.x 'vau)     (fn args
-                            (ival caddr.x (env (listtab:zip cadr.x args) e)))
+      (is car.x 'assign)  (let (var val) cdr.x
+                            (env-set var (ival val e) e))
+      (is car.x 'vau)     (let (parms . body) cdr.x
+                            (fn args
+                              (ival body (env (listtab:zip parms args) e))))
                           (apply (ival car.x e) cdr.x)
                           ))
