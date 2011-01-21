@@ -96,7 +96,14 @@
        (car al)
       (assoc key (cdr al))))
 
-(def alref (al key) (cadr (assoc key al)))
+; '((a 1) (b 2))
+(def alref-proper (al key) (cadr (assoc key al)))
+; '((a . 1) (b . 2))
+(def alref-improper (al key) (cdr (assoc key al)))
+
+(def alref (al key)
+  (if (dotted (assoc key al)) (alref-improper al key)
+                              (alref-proper al key)))
 
 (mac with (parms . body)
   `((fn ,(map1 car (pair parms))
