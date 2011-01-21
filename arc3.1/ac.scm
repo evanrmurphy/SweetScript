@@ -648,11 +648,14 @@
 ; default vals with them.  To make compatible with existing written tables, 
 ; just use an atom or 3-elt list to keep the default.
 
+(defarc alref arc-alref)
+
 (define (ar-apply fn args)
   (cond ((procedure? fn) 
          (apply fn args))
         ((pair? fn) 
-         (list-ref fn (car args)))
+         ((if (number? (car args)) list-ref arc-alref)
+          fn (car args)))
         ((string? fn) 
          (string-ref fn (car args)))
         ((hash-table? fn) 
