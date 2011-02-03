@@ -90,15 +90,33 @@ evlist = (xs, env) ->
 evproc = (f, args, env) ->
   if car(f) is '&procedure'
     apply f, evlist(args, env)
+  else if car(f) is '&fexpr'
+    apply f, args
 
+globalEnv = nil
+
+# shouldn't have to reference globalEnv here
+evassign = (place, val, env) ->
+  env = globalEnv = bind(place, ev(val, env), env)
+  ev(val, env)
+
+# can fn, car, cdr and cons be removed from here?
 ev1 = (exp, env) ->
   switch car(exp)
+    when 'fx' then list('&fexpr', cadr(exp), caddr(exp), env)
     when 'fn' then list('&procedure', cadr(exp), caddr(exp), env)
+    when 'assign' then evassign(cadr(exp), caddr(exp), env)
+    when 'eval' then ev(cadr(exp), env)
+    when 'env' then env
     when 'car' then car(ev(cadr(exp), env))
     when 'cdr' then cdr(ev(cadr(exp), env))
     when 'cons' then cons(ev(cadr(exp), env), ev(caddr(exp)))
-    when 'quote' then cadr(exp)
     else evproc(ev(car(exp), env), cdr(exp), env)
 
-ev = (exp, env) ->
+ev = (exp, env=globalEnv) ->
   if atom(exp) then value(exp, env) else ev1(exp, env)
+
+ev(list('assign', 'quote', list('fx', list('exp'), 'exp')))
+
+ev(list('assign', 't', list('quote', 't')))
+ev(list('assign', 'nil', list('quote', 'nil')))

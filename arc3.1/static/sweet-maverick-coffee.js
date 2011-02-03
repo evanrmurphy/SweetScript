@@ -1,4 +1,4 @@
-var acons, apply, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, copylist, ev, ev1, evlist, evproc, len, list, lookup, lookup1, nil, t, value, value1;
+var acons, apply, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, copylist, ev, ev1, evassign, evlist, evproc, globalEnv, len, list, lookup, lookup1, nil, t, value, value1;
 var __slice = Array.prototype.slice;
 t = true;
 nil = null;
@@ -174,28 +174,47 @@ evlist = function(xs, env) {
 evproc = function(f, args, env) {
   if (car(f) === '&procedure') {
     return apply(f, evlist(args, env));
+  } else if (car(f) === '&fexpr') {
+    return apply(f, args);
   }
+};
+globalEnv = nil;
+evassign = function(place, val, env) {
+  env = globalEnv = bind(place, ev(val, env), env);
+  return ev(val, env);
 };
 ev1 = function(exp, env) {
   switch (car(exp)) {
+    case 'fx':
+      return list('&fexpr', cadr(exp), caddr(exp), env);
     case 'fn':
       return list('&procedure', cadr(exp), caddr(exp), env);
+    case 'assign':
+      return evassign(cadr(exp), caddr(exp), env);
+    case 'eval':
+      return ev(cadr(exp), env);
+    case 'env':
+      return env;
     case 'car':
       return car(ev(cadr(exp), env));
     case 'cdr':
       return cdr(ev(cadr(exp), env));
     case 'cons':
       return cons(ev(cadr(exp), env), ev(caddr(exp)));
-    case 'quote':
-      return cadr(exp);
     default:
       return evproc(ev(car(exp), env), cdr(exp), env);
   }
 };
 ev = function(exp, env) {
+  if (env == null) {
+    env = globalEnv;
+  }
   if (atom(exp)) {
     return value(exp, env);
   } else {
     return ev1(exp, env);
   }
 };
+ev(list('assign', 'quote', list('fx', list('exp'), 'exp')));
+ev(list('assign', 't', list('quote', 't')));
+ev(list('assign', 'nil', list('quote', 'nil')));
