@@ -36,18 +36,6 @@ addGlobals = (env) ->
       acc = 0
       _(args).each (x) -> acc += x
       acc
-    '-': (args...) ->
-      acc = args[0]
-      _(args[1..]).each (x) -> acc -= x
-      acc
-    '*': (args...) ->
-      acc = 1
-      _(args).each (x) -> acc *= x
-      acc
-    '/': (args...) ->
-      acc = args[0]
-      _(args[1..]).each (x) -> acc /= x
-      acc
     'cons': (x,y) -> [x].concat(y)
     'car': (xs) -> xs[0]
     'cdr': (xs) -> xs[1..]
