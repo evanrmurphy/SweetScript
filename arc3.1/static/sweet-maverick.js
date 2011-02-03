@@ -26,17 +26,9 @@ atom = function(x) {
 
 // car, cdr, cons
 
-car = function(xs) {
-  return xs[0];
-}
-
-cdr = function(xs) {
-  return xs[1];
-}
-
-cons = function(a, d) {
-  return [a, d];
-}
+car = function(xs) { return xs[0]; }
+cdr = function(xs) { return xs[1]; }
+cons = function(a, d) { return [a, d]; }
 
 // utils
 
@@ -97,19 +89,45 @@ bind = function(vars, args, env) {
     : cons(cons(vars, args), env);
 }
 
+// apply
+
+apply = function(f, args) {
+  return ev(cadr(f), bind(car(f), args, caddr(f)));
+}
+
+evlist = function(xs, env) {
+  return no(xs)
+    ? nil
+    : cons(ev(car(xs), env),
+           evlist(cdr(xs), env));
+}
+
+evproc = function(f, args, env) {
+  return apply(f, evlist(args, env))
+}
+
+// eval ("ev", since eval is reserved in javascript)
+
+ev = function(exp, env) {
+  if (atom(exp))
+    return value(exp, env);
+  // else if (is(car(exp), 'fn'))
+  //   return '&procedure' (cadr exp) (caddr exp) env)
+  else if (is(car(exp), 'car'))
+    return car(ev(cadr(exp), env));
+  else if (is(car(exp), 'cdr'))
+    return cdr(ev(cadr(exp), env));
+  else if (is(car(exp), 'cons'))
+    return cons(ev(cadr(exp), env), ev(caddr(exp), env))
+  else
+    return evproc(ev(car(exp), env), cdr(exp), env);
+}
+
+// init
+
 vars = cons('t', cons('nil', nil))
 args = cons(t,   cons(nil,   nil))
 env = bind(vars, args, nil)
 
 exp = cons('car', cons(cons('a', nil), nil))
 
-// eval ("ev", since eval is reserved in javascript)
-
-ev = function(exp, env) {
-  return atom(exp)             ? value(exp, env)
-       : (is(car(exp), 'car')  ? car(ev(cadr(exp), env))
-       : (is(car(exp), 'cdr')  ? cdr(ev(cadr(exp), env))
-       : (is(car(exp), 'cons') ? cons(ev(cadr(exp), env),
-                                      ev(caddr(exp), env))
-       : nil)));
-}
