@@ -27,6 +27,23 @@ cdadr = (xs) -> cdr(car(cdr(xs)))
 cddar = (xs) -> cdr(cdr(car(xs)))
 cdddr = (xs) -> cdr(cdr(cdr(xs)))
 
+caaaar = (xs) -> car(car(car(car(xs))))
+caaadr = (xs) -> car(car(car(cdr(xs))))
+caadar = (xs) -> car(car(cdr(car(xs))))
+caaddr = (xs) -> car(car(cdr(cdr(xs))))
+cadaar = (xs) -> car(cdr(car(car(xs))))
+cadadr = (xs) -> car(cdr(car(cdr(xs))))
+caddar = (xs) -> car(cdr(cdr(car(xs))))
+cadddr = (xs) -> car(cdr(cdr(cdr(xs))))
+cdaaar = (xs) -> cdr(car(car(car(xs))))
+cdaadr = (xs) -> cdr(car(car(cdr(xs))))
+cdadar = (xs) -> cdr(car(cdr(car(xs))))
+cdaddr = (xs) -> cdr(car(cdr(cdr(xs))))
+cddaar = (xs) -> cdr(cdr(car(car(xs))))
+cddadr = (xs) -> cdr(cdr(car(cdr(xs))))
+cdddar = (xs) -> cdr(cdr(cdr(car(xs))))
+cddddr = (xs) -> cdr(cdr(cdr(cdr(xs))))
+
 len = (xs) ->
   if xs is nil then 0 else 1 + len(cdr(xs))
 
@@ -60,3 +77,28 @@ bind = (vars, args, env) ->
     cons(cons(list(vars), list(args)), env)
   else
     cons(cons(vars, args), env)
+
+apply = (f, args) ->
+  ev(caddr(f), bind(cadr(f), args, cadddr(f)))
+
+evlist = (xs, env) ->
+  if xs is nil
+    nil
+  else
+    cons(ev(car(xs), env), evlist(cdr(xs), env))
+
+evproc = (f, args, env) ->
+  if car(f) is '&procedure'
+    apply f, evlist(args, env)
+
+ev1 = (exp, env) ->
+  switch car(exp)
+    when 'fn' then list('&procedure', cadr(exp), caddr(exp), env)
+    when 'car' then car(ev(cadr(exp), env))
+    when 'cdr' then cdr(ev(cadr(exp), env))
+    when 'cons' then cons(ev(cadr(exp), env), ev(caddr(exp)))
+    when 'quote' then cadr(exp)
+    else evproc(ev(car(exp), env), cdr(exp), env)
+
+ev = (exp, env) ->
+  if atom(exp) then value(exp, env) else ev1(exp, env)

@@ -1,4 +1,4 @@
-var acons, atom, bind, caaar, caadr, caar, cadar, caddr, cadr, car, cdaar, cdadr, cdar, cddar, cdddr, cddr, cdr, cons, copylist, len, list, lookup, lookup1, nil, t, value, value1;
+var acons, apply, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, copylist, ev, ev1, evlist, evproc, len, list, lookup, lookup1, nil, t, value, value1;
 var __slice = Array.prototype.slice;
 t = true;
 nil = null;
@@ -61,6 +61,54 @@ cddar = function(xs) {
 cdddr = function(xs) {
   return cdr(cdr(cdr(xs)));
 };
+caaaar = function(xs) {
+  return car(car(car(car(xs))));
+};
+caaadr = function(xs) {
+  return car(car(car(cdr(xs))));
+};
+caadar = function(xs) {
+  return car(car(cdr(car(xs))));
+};
+caaddr = function(xs) {
+  return car(car(cdr(cdr(xs))));
+};
+cadaar = function(xs) {
+  return car(cdr(car(car(xs))));
+};
+cadadr = function(xs) {
+  return car(cdr(car(cdr(xs))));
+};
+caddar = function(xs) {
+  return car(cdr(cdr(car(xs))));
+};
+cadddr = function(xs) {
+  return car(cdr(cdr(cdr(xs))));
+};
+cdaaar = function(xs) {
+  return cdr(car(car(car(xs))));
+};
+cdaadr = function(xs) {
+  return cdr(car(car(cdr(xs))));
+};
+cdadar = function(xs) {
+  return cdr(car(cdr(car(xs))));
+};
+cdaddr = function(xs) {
+  return cdr(car(cdr(cdr(xs))));
+};
+cddaar = function(xs) {
+  return cdr(cdr(car(car(xs))));
+};
+cddadr = function(xs) {
+  return cdr(cdr(car(cdr(xs))));
+};
+cdddar = function(xs) {
+  return cdr(cdr(cdr(car(xs))));
+};
+cddddr = function(xs) {
+  return cdr(cdr(cdr(cdr(xs))));
+};
 len = function(xs) {
   if (xs === nil) {
     return 0;
@@ -111,5 +159,43 @@ bind = function(vars, args, env) {
     return cons(cons(list(vars), list(args)), env);
   } else {
     return cons(cons(vars, args), env);
+  }
+};
+apply = function(f, args) {
+  return ev(caddr(f), bind(cadr(f), args, cadddr(f)));
+};
+evlist = function(xs, env) {
+  if (xs === nil) {
+    return nil;
+  } else {
+    return cons(ev(car(xs), env), evlist(cdr(xs), env));
+  }
+};
+evproc = function(f, args, env) {
+  if (car(f) === '&procedure') {
+    return apply(f, evlist(args, env));
+  }
+};
+ev1 = function(exp, env) {
+  switch (car(exp)) {
+    case 'fn':
+      return list('&procedure', cadr(exp), caddr(exp), env);
+    case 'car':
+      return car(ev(cadr(exp), env));
+    case 'cdr':
+      return cdr(ev(cadr(exp), env));
+    case 'cons':
+      return cons(ev(cadr(exp), env), ev(caddr(exp)));
+    case 'quote':
+      return cadr(exp);
+    default:
+      return evproc(ev(car(exp), env), cdr(exp), env);
+  }
+};
+ev = function(exp, env) {
+  if (atom(exp)) {
+    return value(exp, env);
+  } else {
+    return ev1(exp, env);
   }
 };
