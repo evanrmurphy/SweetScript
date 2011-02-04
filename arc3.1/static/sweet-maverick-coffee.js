@@ -1,14 +1,15 @@
-var acons, apply, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, copylist, ev, ev1, evassign, evlist, evproc, globalEnv, len, list, lookup, lookup1, nil, t, value, value1;
+var acons, apply, arraylist, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, ev, ev1, evassign, evlist, evproc, globalEnv, isArray, len, list, lookup, lookup1, nil, parse, rarraylist, read, t, tokenize, value, value1;
 var __slice = Array.prototype.slice;
 t = true;
 nil = null;
-acons = function(x) {
+isArray = function(x) {
   if (x && (typeof x === 'object') && (x.constructor === Array)) {
     return t;
   } else {
     return nil;
   }
 };
+acons = isArray;
 atom = function(x) {
   if (acons(x)) {
     return nil;
@@ -116,17 +117,17 @@ len = function(xs) {
     return 1 + len(cdr(xs));
   }
 };
-copylist = function(xs) {
-  if (xs.length === 0) {
+arraylist = function(a) {
+  if (a.length === 0) {
     return nil;
   } else {
-    return cons(car(xs), copylist(xs.slice(1)));
+    return cons(a[0], arraylist(a.slice(1)));
   }
 };
 list = function() {
   var args;
   args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-  return copylist(args);
+  return arraylist(args);
 };
 lookup1 = function(name, vars, vals, env) {
   if (vars === nil) {
@@ -185,7 +186,7 @@ evassign = function(place, val, env) {
 };
 ev1 = function(exp, env) {
   switch (car(exp)) {
-    case 'fx':
+    case 'vau':
       return list('&fexpr', cadr(exp), caddr(exp), env);
     case 'fn':
       return list('&procedure', cadr(exp), caddr(exp), env);
@@ -215,6 +216,24 @@ ev = function(exp, env) {
     return ev1(exp, env);
   }
 };
-ev(list('assign', 'quote', list('fx', list('exp'), 'exp')));
+ev(list('assign', 'quote', list('vau', list('exp'), 'exp')));
 ev(list('assign', 't', list('quote', 't')));
 ev(list('assign', 'nil', list('quote', 'nil')));
+tokenize = function(s) {
+  var spaced;
+  spaced = s.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ').split(' ');
+  return _(spaced).without('');
+};
+rarraylist = function(a) {
+  if (a.length === 0) {
+    return nil;
+  } else if (isArray(a[0])) {
+    return cons(rarraylist(a[0]), rarraylist(a.slice(1)));
+  } else {
+    return cons(a[0], rarraylist(a.slice(1)));
+  }
+};
+read = function(s) {
+  return rarraylist(readFrom(tokenize(s)));
+};
+parse = read;

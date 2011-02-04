@@ -1,9 +1,11 @@
 t = true
 nil = null
 
-acons = (x) ->
+isArray = (x) ->
   if (x and (typeof x is 'object') and
             (x.constructor is Array)) then t else nil
+
+acons = isArray
 
 atom = (x) ->
   if acons(x) then nil else t
@@ -47,10 +49,10 @@ cddddr = (xs) -> cdr(cdr(cdr(cdr(xs))))
 len = (xs) ->
   if xs is nil then 0 else 1 + len(cdr(xs))
 
-copylist = (xs) ->
-  if xs.length == 0 then nil else cons car(xs), copylist(xs[1..])
+arraylist = (a) ->
+  if a.length == 0 then nil else cons a[0], arraylist(a[1..])
 
-list = (args...) -> copylist(args)
+list = (args...) -> arraylist(args)
 
 lookup1 = (name, vars, vals, env) ->
   if vars is nil
@@ -103,7 +105,7 @@ evassign = (place, val, env) ->
 # can fn, car, cdr and cons be removed from here?
 ev1 = (exp, env) ->
   switch car(exp)
-    when 'fx' then list('&fexpr', cadr(exp), caddr(exp), env)
+    when 'vau' then list('&fexpr', cadr(exp), caddr(exp), env)
     when 'fn' then list('&procedure', cadr(exp), caddr(exp), env)
     when 'assign' then evassign(cadr(exp), caddr(exp), env)
     when 'eval' then ev(cadr(exp), env)
@@ -116,7 +118,41 @@ ev1 = (exp, env) ->
 ev = (exp, env=globalEnv) ->
   if atom(exp) then value(exp, env) else ev1(exp, env)
 
-ev(list('assign', 'quote', list('fx', list('exp'), 'exp')))
+ev(list('assign', 'quote', list('vau', list('exp'), 'exp')))
 
 ev(list('assign', 't', list('quote', 't')))
 ev(list('assign', 'nil', list('quote', 'nil')))
+
+tokenize = (s) ->
+  spaced = s.replace(/\(/g,' ( ').replace(/\)/g,' ) ').split(' ')
+  _(spaced).without('') # purge of empty string tokens
+
+# Recursive arraylist
+rarraylist = (a) ->
+  if a.length == 0
+    nil
+  else if isArray a[0]
+    cons rarraylist(a[0]), rarraylist(a[1..])
+  else
+    cons a[0], rarraylist(a[1..])
+
+# Should convert tokens into format for rarraylist
+# readFrom = (ts) ->
+
+read = (s) ->
+  rarraylist readFrom(tokenize(s))
+
+parse = read
+
+# ToString = (exp) ->
+#   if isa exp, list
+#     '(' + (_(exp).map ToString).join(' ') + ')'
+#   else
+#     exp.toString()
+#
+# repl = (p='sweet> ') ->
+#   while true
+#     val = ev(parse(prompt p))
+#     alert(ToString val)
+#
+# sweet = (exp) -> ev(parse exp)
