@@ -173,4 +173,4 @@ X('(assign cadr (fn (xs) (car (cdr xs))))')
 X('(assign cdar (fn (xs) (cdr (car xs))))')
 X('(assign cddr (fn (xs) (cdr (cdr xs))))')
 
-X('(assign flip (fn (xs) (cons (cdr xs) (car xs))))')
+
