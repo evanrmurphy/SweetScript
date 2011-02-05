@@ -64,11 +64,17 @@ test('len #2', len(cons(1, nil)), 1)
 test('len #3', len(cons(1, cons(2, nil))), 2)
 
 arraylist = (a) ->
-  if a.length == 0 then nil else cons a[0], arraylist(a[1..])
+  if a.length == 0
+    nil
+  else if a.length > 2 and a[1] is '.'
+    cons a[0], a[2]
+  else
+    cons a[0], arraylist(a[1..])
 
 test('arraylist #1', arraylist([]), nil)
 test('arraylist #2', arraylist([1]), cons(1, nil))
 test('arraylist #3', arraylist([1, 2]), cons(1, cons(2, nil)))
+test('arraylist #4', arraylist([1, '.', 2]), cons(1, 2))
 
 list = (args...) -> arraylist(args)
 
@@ -141,19 +147,33 @@ ev1 = (s, env) ->
 ev = (s, env=globalEnv) ->
   if atom(s) then value(s, env) else ev1(s, env)
 
-# recursive arraylist
-rarraylist = (a) ->
-  if a.length == 0
-    nil
-  else if isarray a[0]
+rarraylistDot = (a) ->
+  if isarray a[0]
+    cons rarraylist(a[0]), rarraylist a[2]
+  else
+    cons a[0], rarraylist a[2]
+
+rarraylistNonDot = (a) ->
+  if isarray a[0]
     cons rarraylist(a[0]), rarraylist(a[1..])
   else
     cons a[0], rarraylist(a[1..])
+
+# recursive arraylist, don't like name and
+# not even accurate with addition of atom case
+rarraylist = (a) ->
+  if atom a then a
+  else if a.length == 0 then nil
+  else if a.length == 3 and a[1] == '.'
+    rarraylistDot a
+  else rarraylistNonDot a
 
 test('rarraylist #1', rarraylist([]), nil)
 test('rarraylist #2', rarraylist([1]), list(1))
 test('rarraylist #3', rarraylist([1, 2, 3]), list(1, 2, 3))
 test('rarraylist #4', rarraylist([1, [2, 3], 4]), list(1, list(2, 3), 4))
+test('rarraylist #5', rarraylist([1, [2, '.', 3], 4]), list(1, cons(2, 3), 4))
+test('rarraylist #6', rarraylist([1, '.', [2, '.', 3]]), cons(1, cons(2, 3)))
 
 tokensrarray = (ts) ->
   tok = ts.shift()
@@ -171,13 +191,15 @@ tokenize = (s) ->
   _(spaced).without('') # purge of empty string tokens
 
 read = (s) ->
-  acc = tokensrarray tokenize(s)
-  if isarray acc then rarraylist acc else acc
+  rarraylist tokensrarray(tokenize(s))
 
 test('read #1', read('t'), 't')
 test('read #2', read('nil'), 'nil')
 test('read #3', read('(1)'), list('1'))
 test('read #4', read('(foo bar)'), list('foo', 'bar'))
+test('read #5', read('(foo . bar)'), cons('foo', 'bar'))
+test('read #6', read('(foo . (bar . baz))'), cons('foo', cons('bar', 'baz')))
+test('read #7', read('(foo . (bar . nil))'), cons('foo', cons('bar', nil))) # fails
 
 isfn = (x) ->
   if acons(x) and car(x) is '#<procedure>' then t else nil

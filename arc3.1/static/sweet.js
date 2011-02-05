@@ -1,4 +1,4 @@
-var X, acons, apply, arraylist, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, ev, ev1, evassign, evlist, evproc, globalEnv, isarray, isfexpr, isfn, len, list, lookup, lookup1, nil, rarraylist, read, t, test, tokenize, tokensrarray, tostr, value, value1;
+var X, acons, apply, arraylist, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, ev, ev1, evassign, evlist, evproc, globalEnv, isarray, isfexpr, isfn, len, list, lookup, lookup1, nil, rarraylist, rarraylistDot, rarraylistNonDot, read, t, test, tokenize, tokensrarray, tostr, value, value1;
 var __slice = Array.prototype.slice;
 test = function(name, x, expected) {
   if (!_(x).isEqual(expected)) {
@@ -131,6 +131,8 @@ test('len #3', len(cons(1, cons(2, nil))), 2);
 arraylist = function(a) {
   if (a.length === 0) {
     return nil;
+  } else if (a.length > 2 && a[1] === '.') {
+    return cons(a[0], a[2]);
   } else {
     return cons(a[0], arraylist(a.slice(1)));
   }
@@ -138,6 +140,7 @@ arraylist = function(a) {
 test('arraylist #1', arraylist([]), nil);
 test('arraylist #2', arraylist([1]), cons(1, nil));
 test('arraylist #3', arraylist([1, 2]), cons(1, cons(2, nil)));
+test('arraylist #4', arraylist([1, '.', 2]), cons(1, 2));
 list = function() {
   var args;
   args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
@@ -232,19 +235,37 @@ ev = function(s, env) {
     return ev1(s, env);
   }
 };
-rarraylist = function(a) {
-  if (a.length === 0) {
-    return nil;
-  } else if (isarray(a[0])) {
+rarraylistDot = function(a) {
+  if (isarray(a[0])) {
+    return cons(rarraylist(a[0]), rarraylist(a[2]));
+  } else {
+    return cons(a[0], rarraylist(a[2]));
+  }
+};
+rarraylistNonDot = function(a) {
+  if (isarray(a[0])) {
     return cons(rarraylist(a[0]), rarraylist(a.slice(1)));
   } else {
     return cons(a[0], rarraylist(a.slice(1)));
+  }
+};
+rarraylist = function(a) {
+  if (atom(a)) {
+    return a;
+  } else if (a.length === 0) {
+    return nil;
+  } else if (a.length === 3 && a[1] === '.') {
+    return rarraylistDot(a);
+  } else {
+    return rarraylistNonDot(a);
   }
 };
 test('rarraylist #1', rarraylist([]), nil);
 test('rarraylist #2', rarraylist([1]), list(1));
 test('rarraylist #3', rarraylist([1, 2, 3]), list(1, 2, 3));
 test('rarraylist #4', rarraylist([1, [2, 3], 4]), list(1, list(2, 3), 4));
+test('rarraylist #5', rarraylist([1, [2, '.', 3], 4]), list(1, cons(2, 3), 4));
+test('rarraylist #6', rarraylist([1, '.', [2, '.', 3]]), cons(1, cons(2, 3)));
 tokensrarray = function(ts) {
   var acc, tok;
   tok = ts.shift();
@@ -265,18 +286,15 @@ tokenize = function(s) {
   return _(spaced).without('');
 };
 read = function(s) {
-  var acc;
-  acc = tokensrarray(tokenize(s));
-  if (isarray(acc)) {
-    return rarraylist(acc);
-  } else {
-    return acc;
-  }
+  return rarraylist(tokensrarray(tokenize(s)));
 };
 test('read #1', read('t'), 't');
 test('read #2', read('nil'), 'nil');
 test('read #3', read('(1)'), list('1'));
 test('read #4', read('(foo bar)'), list('foo', 'bar'));
+test('read #5', read('(foo . bar)'), cons('foo', 'bar'));
+test('read #6', read('(foo . (bar . baz))'), cons('foo', cons('bar', 'baz')));
+test('read #7', read('(foo . (bar . nil))'), cons('foo', cons('bar', nil)));
 isfn = function(x) {
   if (acons(x) && car(x) === '#<procedure>') {
     return t;
