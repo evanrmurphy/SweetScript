@@ -1,3 +1,5 @@
+# depends on underscore.js
+
 t = true
 nil = null
 

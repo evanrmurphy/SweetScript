@@ -1,218 +1,272 @@
-(function() {
-  var Env, Eval, Symbol, ToString, addGlobals, atom, globalEnv, isa, list, parse, read, readFrom, repl, sweet, tokenize, typeOf;
-  var __slice = Array.prototype.slice;
-  typeOf = function(value) {
-    var s;
-    s = typeof value;
-    if (s === 'object') {
-      if (value) {
-        if (value instanceof Array) {
-          s = 'array';
-        } else {
-          s = 'null';
-        }
-      }
+var X, acons, apply, arraylist, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, ev, ev1, evassign, evlist, evproc, globalEnv, isArray, len, list, lookup, lookup1, nil, rarraylist, read, t, tokenize, tokensrarray, tostr, value, value1;
+var __slice = Array.prototype.slice;
+t = true;
+nil = null;
+isArray = function(x) {
+  if (x && (typeof x === 'object') && (x.constructor === Array)) {
+    return t;
+  } else {
+    return nil;
+  }
+};
+acons = isArray;
+atom = function(x) {
+  if (acons(x)) {
+    return nil;
+  } else {
+    return t;
+  }
+};
+car = function(xs) {
+  return xs[0];
+};
+cdr = function(xs) {
+  return xs[1];
+};
+cons = function(a, d) {
+  return [a, d];
+};
+caar = function(xs) {
+  return car(car(xs));
+};
+cadr = function(xs) {
+  return car(cdr(xs));
+};
+cdar = function(xs) {
+  return cdr(car(xs));
+};
+cddr = function(xs) {
+  return cdr(cdr(xs));
+};
+caaar = function(xs) {
+  return car(car(car(xs)));
+};
+caadr = function(xs) {
+  return car(car(cdr(xs)));
+};
+cadar = function(xs) {
+  return car(cdr(car(xs)));
+};
+caddr = function(xs) {
+  return car(cdr(cdr(xs)));
+};
+cdaar = function(xs) {
+  return cdr(car(car(xs)));
+};
+cdadr = function(xs) {
+  return cdr(car(cdr(xs)));
+};
+cddar = function(xs) {
+  return cdr(cdr(car(xs)));
+};
+cdddr = function(xs) {
+  return cdr(cdr(cdr(xs)));
+};
+caaaar = function(xs) {
+  return car(car(car(car(xs))));
+};
+caaadr = function(xs) {
+  return car(car(car(cdr(xs))));
+};
+caadar = function(xs) {
+  return car(car(cdr(car(xs))));
+};
+caaddr = function(xs) {
+  return car(car(cdr(cdr(xs))));
+};
+cadaar = function(xs) {
+  return car(cdr(car(car(xs))));
+};
+cadadr = function(xs) {
+  return car(cdr(car(cdr(xs))));
+};
+caddar = function(xs) {
+  return car(cdr(cdr(car(xs))));
+};
+cadddr = function(xs) {
+  return car(cdr(cdr(cdr(xs))));
+};
+cdaaar = function(xs) {
+  return cdr(car(car(car(xs))));
+};
+cdaadr = function(xs) {
+  return cdr(car(car(cdr(xs))));
+};
+cdadar = function(xs) {
+  return cdr(car(cdr(car(xs))));
+};
+cdaddr = function(xs) {
+  return cdr(car(cdr(cdr(xs))));
+};
+cddaar = function(xs) {
+  return cdr(cdr(car(car(xs))));
+};
+cddadr = function(xs) {
+  return cdr(cdr(car(cdr(xs))));
+};
+cdddar = function(xs) {
+  return cdr(cdr(cdr(car(xs))));
+};
+cddddr = function(xs) {
+  return cdr(cdr(cdr(cdr(xs))));
+};
+len = function(xs) {
+  if (xs === nil) {
+    return 0;
+  } else {
+    return 1 + len(cdr(xs));
+  }
+};
+arraylist = function(a) {
+  if (a.length === 0) {
+    return nil;
+  } else {
+    return cons(a[0], arraylist(a.slice(1)));
+  }
+};
+list = function() {
+  var args;
+  args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+  return arraylist(args);
+};
+lookup1 = function(name, vars, vals, env) {
+  if (vars === nil) {
+    return lookup(name, cdr(env));
+  } else if (name === car(vars)) {
+    return vals;
+  } else {
+    return lookup1(name, cdr(vars), cdr(vals), env);
+  }
+};
+lookup = function(name, env) {
+  if (env === nil) {
+    return nil;
+  } else {
+    return lookup1(name, caar(env), cdar(env), env);
+  }
+};
+value1 = function(name, slot) {
+  if (slot === nil) {
+    return nil;
+  } else {
+    return car(slot);
+  }
+};
+value = function(name, env) {
+  return value1(name, lookup(name, env));
+};
+bind = function(vars, args, env) {
+  if (atom(vars)) {
+    return cons(cons(list(vars), list(args)), env);
+  } else {
+    return cons(cons(vars, args), env);
+  }
+};
+apply = function(f, args) {
+  return ev(caddr(f), bind(cadr(f), args, cadddr(f)));
+};
+evlist = function(xs, env) {
+  if (xs === nil) {
+    return nil;
+  } else {
+    return cons(ev(car(xs), env), evlist(cdr(xs), env));
+  }
+};
+evproc = function(f, args, env) {
+  if (car(f) === '&procedure') {
+    return apply(f, evlist(args, env));
+  } else if (car(f) === '&fexpr') {
+    return apply(f, args);
+  }
+};
+globalEnv = nil;
+evassign = function(place, val, env) {
+  env = globalEnv = bind(place, ev(val, env), env);
+  return ev(val, env);
+};
+ev1 = function(exp, env) {
+  switch (car(exp)) {
+    case 'vau':
+      return list('&fexpr', cadr(exp), caddr(exp), env);
+    case 'fn':
+      return list('&procedure', cadr(exp), caddr(exp), env);
+    case 'assign':
+      return evassign(cadr(exp), caddr(exp), env);
+    case 'eval':
+      return ev(cadr(exp), env);
+    case 'env':
+      return env;
+    case 'car':
+      return car(ev(cadr(exp), env));
+    case 'cdr':
+      return cdr(ev(cadr(exp), env));
+    case 'cons':
+      return cons(ev(cadr(exp), env), ev(caddr(exp)));
+    default:
+      return evproc(ev(car(exp), env), cdr(exp), env);
+  }
+};
+ev = function(exp, env) {
+  if (env == null) {
+    env = globalEnv;
+  }
+  if (atom(exp)) {
+    return value(exp, env);
+  } else {
+    return ev1(exp, env);
+  }
+};
+rarraylist = function(a) {
+  if (a.length === 0) {
+    return nil;
+  } else if (isArray(a[0])) {
+    return cons(rarraylist(a[0]), rarraylist(a.slice(1)));
+  } else {
+    return cons(a[0], rarraylist(a.slice(1)));
+  }
+};
+tokensrarray = function(ts) {
+  var acc, tok;
+  tok = ts.shift();
+  if (tok === '(') {
+    acc = [];
+    while (ts[0] !== ')') {
+      acc.push(tokensrarray(ts));
     }
-    return s;
-  };
-  isa = function(x, y) {
-    return typeOf(x) === y;
-  };
-  Symbol = "string";
-  list = "array";
-  Env = function() {
-    function Env(parms, args, outer) {
-      if (parms == null) {
-        parms = [];
-      }
-      if (args == null) {
-        args = [];
-      }
-      if (outer == null) {
-        outer = null;
-      }
-      _(_.zip(parms, args)).each(function(keyVal) {
-        var key, val;
-        key = keyVal[0], val = keyVal[1];
-        return this[key] = val;
-      });
-      this.outer = outer;
-    }
-    Env.prototype.find = function(Var) {
-      var _ref;
-      if (Var in this) {
-        return this;
-      } else {
-        return (_ref = this.outer) != null ? _ref.find(Var) : void 0;
-      }
-    };
-    return Env;
-  }();
-  addGlobals = function(env) {
-    _(env).extend({
-      '+': function() {
-        var acc, args;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        acc = 0;
-        _(args).each(function(x) {
-          return acc += x;
-        });
-        return acc;
-      },
-      '-': function() {
-        var acc, args;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        acc = args[0];
-        _(args.slice(1)).each(function(x) {
-          return acc -= x;
-        });
-        return acc;
-      },
-      '*': function() {
-        var acc, args;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        acc = 1;
-        _(args).each(function(x) {
-          return acc *= x;
-        });
-        return acc;
-      },
-      '/': function() {
-        var acc, args;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        acc = args[0];
-        _(args.slice(1)).each(function(x) {
-          return acc /= x;
-        });
-        return acc;
-      },
-      'cons': function(x, y) {
-        return [x].concat(y);
-      },
-      'car': function(xs) {
-        return xs[0];
-      },
-      'cdr': function(xs) {
-        return xs.slice(1);
-      }
-    });
-    return env;
-  };
-  globalEnv = addGlobals(new Env);
-  Eval = function(x, env) {
-    var Var, alt, branch, conseq, exp, exps, proc, scope, test, val, vars, _, _i, _j, _len, _len2, _ref, _results;
-    if (env == null) {
-      env = globalEnv;
-    }
-    if (isa(x, Symbol)) {
-      return env.find(x)[x];
-    } else if (!isa(x, list)) {
-      return x;
-    } else if (x[0] === 'quote') {
-      _ = x[0], exp = x[1];
-      return exp;
-    } else if (x[0] === 'if') {
-      _ = x[0], test = x[1], conseq = x[2], alt = x[3];
-      branch = (Eval(test, env) ? conseq : alt);
-      return Eval(branch, env);
-    } else if (x[0] === '=') {
-      _ = x[0], Var = x[1], exp = x[2];
-      scope = (env.find(Var) ? env.find(Var) : globalEnv);
-      return scope[Var] = Eval(exp, env);
-    } else if (x[0] === 'fn') {
-      _ = x[0], vars = x[1], exp = x[2];
-      return function() {
-        var args;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        return Eval(exp, new Env(vars, args, env));
-      };
-    } else if (x[0] === 'do') {
-      _ref = x.slice(1);
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        exp = _ref[_i];
-        val = Eval(exp, env);
-      }
-      return val;
+    ts.shift();
+    return acc;
+  } else {
+    return tok;
+  }
+};
+tokenize = function(s) {
+  var spaced;
+  spaced = s.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ').split(' ');
+  return _(spaced).without('');
+};
+read = function(s) {
+  var acc;
+  acc = tokensrarray(tokenize(s));
+  if (isArray(acc)) {
+    return rarraylist(acc);
+  } else {
+    return acc;
+  }
+};
+tostr = function(s) {
+  if (atom(s)) {
+    if (s === nil) {
+      return 'nil';
     } else {
-      exps = (function() {
-        _results = [];
-        for (_j = 0, _len2 = x.length; _j < _len2; _j++) {
-          exp = x[_j];
-          _results.push(Eval(exp, env));
-        }
-        return _results;
-      }());
-      proc = exps.shift();
-      return proc.apply(proc, exps);
+      return s;
     }
-  };
-  read = function(s) {
-    return readFrom(tokenize(s));
-  };
-  parse = read;
-  tokenize = function(s) {
-    var spaced;
-    spaced = s.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ').split(' ');
-    return _(spaced).without('');
-  };
-  readFrom = function(tokens) {
-    var L, token;
-    if (tokens.length === 0) {
-      alert('unexpected EOF while reading');
-    }
-    token = tokens.shift();
-    if ('(' === token) {
-      L = [];
-      while (tokens[0] !== ')') {
-        L.push(readFrom(tokens));
-      }
-      tokens.shift();
-      return L;
-    } else if (')' === token) {
-      return alert('unexpected )');
-    } else {
-      return atom(token);
-    }
-  };
-  atom = function(token) {
-    if (token.match(/^\d+\.?$/)) {
-      return parseInt(token);
-    } else if (token.match(/^\d*\.\d+$/)) {
-      return parseFloat(token);
-    } else {
-      return "" + token;
-    }
-  };
-  ToString = function(exp) {
-    if (isa(exp, list)) {
-      return '(' + (_(exp).map(ToString)).join(' ') + ')';
-    } else {
-      return exp.toString();
-    }
-  };
-  repl = function(p) {
-    var val, _results;
-    if (p == null) {
-      p = 'sweet> ';
-    }
-    _results = [];
-    while (true) {
-      val = Eval(parse(prompt(p)));
-      _results.push(alert(ToString(val)));
-    }
-    return _results;
-  };
-  sweet = function(exp) {
-    return Eval(parse(exp));
-  };
-  window.repl = repl;
-  window.read = read;
-  window.parse = parse;
-  window.tokenize = tokenize;
-  window.ToString = ToString;
-  window.atom = atom;
-  window.Env = Env;
-  window.globalEnv = globalEnv;
-  window.Eval = Eval;
-  window.sweet = sweet;
-}).call(this);
+  } else {
+    return "(" + (tostr(car(s))) + " . " + (tostr(cdr(s))) + ")";
+  }
+};
+X = function(s) {
+  return tostr(ev(read(s)));
+};
+X('(assign quote (vau (x) x))');
+X('(assign t (quote t))');
+X('(assign nil (quote nil))');
