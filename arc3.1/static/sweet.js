@@ -1,15 +1,15 @@
-var X, acons, apply, arraylist, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, ev, ev1, evassign, evlist, evproc, globalEnv, isArray, isfexpr, isfn, len, list, lookup, lookup1, nil, rarraylist, read, t, tokenize, tokensrarray, tostr, value, value1;
+var X, acons, apply, arraylist, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, ev, ev1, evassign, evlist, evproc, globalEnv, isarray, isfexpr, isfn, len, list, lookup, lookup1, nil, rarraylist, read, t, tokenize, tokensrarray, tostr, value, value1;
 var __slice = Array.prototype.slice;
 t = true;
 nil = null;
-isArray = function(x) {
+isarray = function(x) {
   if (x && (typeof x === 'object') && (x.constructor === Array)) {
     return t;
   } else {
     return nil;
   }
 };
-acons = isArray;
+acons = isarray;
 atom = function(x) {
   if (acons(x)) {
     return nil;
@@ -217,7 +217,7 @@ ev = function(s, env) {
 rarraylist = function(a) {
   if (a.length === 0) {
     return nil;
-  } else if (isArray(a[0])) {
+  } else if (isarray(a[0])) {
     return cons(rarraylist(a[0]), rarraylist(a.slice(1)));
   } else {
     return cons(a[0], rarraylist(a.slice(1)));
@@ -245,7 +245,7 @@ tokenize = function(s) {
 read = function(s) {
   var acc;
   acc = tokensrarray(tokenize(s));
-  if (isArray(acc)) {
+  if (isarray(acc)) {
     return rarraylist(acc);
   } else {
     return acc;

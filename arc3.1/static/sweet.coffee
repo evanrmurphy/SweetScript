@@ -3,11 +3,11 @@
 t = true
 nil = null
 
-isArray = (x) ->
+isarray = (x) ->
   if (x and (typeof x is 'object') and
             (x.constructor is Array)) then t else nil
 
-acons = isArray
+acons = isarray
 
 atom = (x) ->
   if acons(x) then nil else t
@@ -123,7 +123,7 @@ ev = (s, env=globalEnv) ->
 rarraylist = (a) ->
   if a.length == 0
     nil
-  else if isArray a[0]
+  else if isarray a[0]
     cons rarraylist(a[0]), rarraylist(a[1..])
   else
     cons a[0], rarraylist(a[1..])
@@ -145,7 +145,7 @@ tokenize = (s) ->
 
 read = (s) ->
   acc = tokensrarray tokenize(s)
-  if isArray acc then rarraylist acc else acc
+  if isarray acc then rarraylist acc else acc
 
 isfn = (x) ->
   if acons(x) and car(x) is '#<procedure>' then t else nil
