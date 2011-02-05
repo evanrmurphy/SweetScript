@@ -118,16 +118,7 @@ ev1 = (exp, env) ->
 ev = (exp, env=globalEnv) ->
   if atom(exp) then value(exp, env) else ev1(exp, env)
 
-ev(list('assign', 'quote', list('vau', list('exp'), 'exp')))
-
-ev(list('assign', 't', list('quote', 't')))
-ev(list('assign', 'nil', list('quote', 'nil')))
-
-tokenize = (s) ->
-  spaced = s.replace(/\(/g,' ( ').replace(/\)/g,' ) ').split(' ')
-  _(spaced).without('') # purge of empty string tokens
-
-# Recursive arraylist
+# recursive arraylist
 rarraylist = (a) ->
   if a.length == 0
     nil
@@ -136,23 +127,34 @@ rarraylist = (a) ->
   else
     cons a[0], rarraylist(a[1..])
 
-# Should convert tokens into format for rarraylist
-# readFrom = (ts) ->
+tokensrarray = (ts) ->
+  tok = ts.shift()
+  if tok == '('
+    acc = []
+    while ts[0] != ')'
+      acc.push(tokensrarray ts)
+    ts.shift() # pop off ')'
+    acc
+  else
+    tok
+
+tokenize = (s) ->
+  spaced = s.replace(/\(/g,' ( ').replace(/\)/g,' ) ').split(' ')
+  _(spaced).without('') # purge of empty string tokens
 
 read = (s) ->
-  rarraylist readFrom(tokenize(s))
+  acc = tokensrarray tokenize(s)
+  if isArray acc then rarraylist acc else acc
 
-parse = read
+tostr = (s) ->
+  if atom s
+    if s is nil then 'nil' else s
+  else
+    "(#{tostr car(s)} . #{tostr cdr(s)})"
 
-# ToString = (exp) ->
-#   if isa exp, list
-#     '(' + (_(exp).map ToString).join(' ') + ')'
-#   else
-#     exp.toString()
-#
-# repl = (p='sweet> ') ->
-#   while true
-#     val = ev(parse(prompt p))
-#     alert(ToString val)
-#
-# sweet = (exp) -> ev(parse exp)
+X = (s) -> tostr(ev(read(s)))
+
+X('(assign quote (vau (x) x))')
+
+X('(assign t (quote t))')
+X('(assign nil (quote nil))')
