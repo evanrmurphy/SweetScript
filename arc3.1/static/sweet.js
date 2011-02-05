@@ -1,4 +1,4 @@
-var X, acons, apply, arraylist, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, ev, ev1, evassign, evlist, evproc, globalEnv, isArray, len, list, lookup, lookup1, nil, rarraylist, read, t, tokenize, tokensrarray, tostr, value, value1;
+var X, acons, apply, arraylist, atom, bind, caaaar, caaadr, caaar, caadar, caaddr, caadr, caar, cadaar, cadadr, cadar, caddar, cadddr, caddr, cadr, car, cdaaar, cdaadr, cdaar, cdadar, cdaddr, cdadr, cdar, cddaar, cddadr, cddar, cdddar, cddddr, cdddr, cddr, cdr, cons, ev, ev1, evassign, evlist, evproc, globalEnv, isArray, isfexpr, isfn, len, list, lookup, lookup1, nil, rarraylist, read, t, tokenize, tokensrarray, tostr, value, value1;
 var __slice = Array.prototype.slice;
 t = true;
 nil = null;
@@ -173,9 +173,9 @@ evlist = function(xs, env) {
   }
 };
 evproc = function(f, args, env) {
-  if (car(f) === '&procedure') {
+  if (car(f) === '#<procedure>') {
     return apply(f, evlist(args, env));
-  } else if (car(f) === '&fexpr') {
+  } else if (car(f) === '#<fexpr>') {
     return apply(f, args);
   }
 };
@@ -184,36 +184,34 @@ evassign = function(place, val, env) {
   env = globalEnv = bind(place, ev(val, env), env);
   return ev(val, env);
 };
-ev1 = function(exp, env) {
-  switch (car(exp)) {
+ev1 = function(s, env) {
+  switch (car(s)) {
     case 'vau':
-      return list('&fexpr', cadr(exp), caddr(exp), env);
+      return list('#<fexpr>', cadr(s), caddr(s), env);
     case 'fn':
-      return list('&procedure', cadr(exp), caddr(exp), env);
+      return list('#<procedure>', cadr(s), caddr(s), env);
     case 'assign':
-      return evassign(cadr(exp), caddr(exp), env);
+      return evassign(cadr(s), caddr(s), env);
     case 'eval':
-      return ev(cadr(exp), env);
-    case 'env':
-      return env;
+      return ev(cadr(s), env);
     case 'car':
-      return car(ev(cadr(exp), env));
+      return car(ev(cadr(s), env));
     case 'cdr':
-      return cdr(ev(cadr(exp), env));
+      return cdr(ev(cadr(s), env));
     case 'cons':
-      return cons(ev(cadr(exp), env), ev(caddr(exp)));
+      return cons(ev(cadr(s), env), ev(caddr(s), env));
     default:
-      return evproc(ev(car(exp), env), cdr(exp), env);
+      return evproc(ev(car(s), env), cdr(s), env);
   }
 };
-ev = function(exp, env) {
+ev = function(s, env) {
   if (env == null) {
     env = globalEnv;
   }
-  if (atom(exp)) {
-    return value(exp, env);
+  if (atom(s)) {
+    return value(s, env);
   } else {
-    return ev1(exp, env);
+    return ev1(s, env);
   }
 };
 rarraylist = function(a) {
@@ -253,6 +251,20 @@ read = function(s) {
     return acc;
   }
 };
+isfn = function(x) {
+  if (acons(x) && car(x) === '#<procedure>') {
+    return t;
+  } else {
+    return nil;
+  }
+};
+isfexpr = function(x) {
+  if (acons(x) && (car(x) === '#<fexpr>')) {
+    return t;
+  } else {
+    return nil;
+  }
+};
 tostr = function(s) {
   if (atom(s)) {
     if (s === nil) {
@@ -260,6 +272,10 @@ tostr = function(s) {
     } else {
       return s;
     }
+  } else if (isfn(s)) {
+    return '#<procedure>';
+  } else if (isfexpr(s)) {
+    return '#<fexpr>';
   } else {
     return "(" + (tostr(car(s))) + " . " + (tostr(cdr(s))) + ")";
   }
@@ -270,3 +286,8 @@ X = function(s) {
 X('(assign quote (vau (x) x))');
 X('(assign t (quote t))');
 X('(assign nil (quote nil))');
+X('(assign caar (fn (xs) (car (car xs))))');
+X('(assign cadr (fn (xs) (car (cdr xs))))');
+X('(assign cdar (fn (xs) (cdr (car xs))))');
+X('(assign cddr (fn (xs) (cdr (cdr xs))))');
+X('(assign flip (fn (xs) (cons (cdr xs) (car xs))))');

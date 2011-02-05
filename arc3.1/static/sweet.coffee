@@ -92,9 +92,9 @@ evlist = (xs, env) ->
     cons(ev(car(xs), env), evlist(cdr(xs), env))
 
 evproc = (f, args, env) ->
-  if car(f) is '&procedure'
+  if car(f) is '#<procedure>'
     apply f, evlist(args, env)
-  else if car(f) is '&fexpr'
+  else if car(f) is '#<fexpr>'
     apply f, args
 
 globalEnv = nil
@@ -105,20 +105,19 @@ evassign = (place, val, env) ->
   ev(val, env)
 
 # can fn, car, cdr and cons be removed from here?
-ev1 = (exp, env) ->
-  switch car(exp)
-    when 'vau' then list('&fexpr', cadr(exp), caddr(exp), env)
-    when 'fn' then list('&procedure', cadr(exp), caddr(exp), env)
-    when 'assign' then evassign(cadr(exp), caddr(exp), env)
-    when 'eval' then ev(cadr(exp), env)
-    when 'env' then env
-    when 'car' then car(ev(cadr(exp), env))
-    when 'cdr' then cdr(ev(cadr(exp), env))
-    when 'cons' then cons(ev(cadr(exp), env), ev(caddr(exp)))
-    else evproc(ev(car(exp), env), cdr(exp), env)
+ev1 = (s, env) ->
+  switch car(s)
+    when 'vau' then list('#<fexpr>', cadr(s), caddr(s), env)
+    when 'fn' then list('#<procedure>', cadr(s), caddr(s), env)
+    when 'assign' then evassign(cadr(s), caddr(s), env)
+    when 'eval' then ev(cadr(s), env)
+    when 'car' then car(ev(cadr(s), env))
+    when 'cdr' then cdr(ev(cadr(s), env))
+    when 'cons' then cons(ev(cadr(s), env), ev(caddr(s), env))
+    else evproc(ev(car(s), env), cdr(s), env)
 
-ev = (exp, env=globalEnv) ->
-  if atom(exp) then value(exp, env) else ev1(exp, env)
+ev = (s, env=globalEnv) ->
+  if atom(s) then value(s, env) else ev1(s, env)
 
 # recursive arraylist
 rarraylist = (a) ->
@@ -148,9 +147,17 @@ read = (s) ->
   acc = tokensrarray tokenize(s)
   if isArray acc then rarraylist acc else acc
 
+isfn = (x) ->
+  if acons(x) and car(x) is '#<procedure>' then t else nil
+
+isfexpr = (x) ->
+  if acons(x) and (car(x) is '#<fexpr>') then t else nil
+
 tostr = (s) ->
   if atom s
     if s is nil then 'nil' else s
+  else if isfn(s) then '#<procedure>'
+  else if isfexpr(s) then '#<fexpr>'
   else
     "(#{tostr car(s)} . #{tostr cdr(s)})"
 
@@ -160,3 +167,10 @@ X('(assign quote (vau (x) x))')
 
 X('(assign t (quote t))')
 X('(assign nil (quote nil))')
+
+X('(assign caar (fn (xs) (car (car xs))))')
+X('(assign cadr (fn (xs) (car (cdr xs))))')
+X('(assign cdar (fn (xs) (cdr (car xs))))')
+X('(assign cddr (fn (xs) (cdr (cdr xs))))')
+
+X('(assign flip (fn (xs) (cons (cdr xs) (car xs))))')
