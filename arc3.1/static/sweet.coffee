@@ -1,133 +1,160 @@
-# Used as a guide: http://norvig.com/lispy.html
+t = true
+nil = null
 
-# Borrowed from http://javascript.crockford.com/remedial.html
-# to help distinguish arrays from other objects
-typeOf = (value) ->
-  s = typeof value
-  if s is 'object'
-    if value
-      if value instanceof Array
-        s = 'array'
-      else
-        s = 'null'
-  s
+isArray = (x) ->
+  if (x and (typeof x is 'object') and
+            (x.constructor is Array)) then t else nil
 
-isa = (x, y) ->
-  typeOf(x) is y
+acons = isArray
 
-################ Symbol, Procedure, Env classes
+atom = (x) ->
+  if acons(x) then nil else t
 
-Symbol = "string"
-list = "array"
+car = (xs) -> xs[0]
+cdr = (xs) -> xs[1]
 
-class Env
-  constructor: (parms=[], args=[], outer=null) ->
-    _(_.zip parms, args).each (keyVal) ->
-      [key, val] = keyVal
-      this[key] = val
-    @outer = outer
-  find: (Var) ->
-    if Var of this then this else @outer?.find(Var)
+cons = (a, d) -> [a, d]
 
-# This will grow fast, should move to separate file or something
-addGlobals = (env) ->
-  _(env).extend
-    '+': (args...) ->
-      acc = 0
-      _(args).each (x) -> acc += x
-      acc
-    'cons': (x,y) -> [x].concat(y)
-    'car': (xs) -> xs[0]
-    'cdr': (xs) -> xs[1..]
-  env
+caar = (xs) -> car(car(xs))
+cadr = (xs) -> car(cdr(xs))
+cdar = (xs) -> cdr(car(xs))
+cddr = (xs) -> cdr(cdr(xs))
 
-globalEnv = addGlobals(new Env)
+caaar = (xs) -> car(car(car(xs)))
+caadr = (xs) -> car(car(cdr(xs)))
+cadar = (xs) -> car(cdr(car(xs)))
+caddr = (xs) -> car(cdr(cdr(xs)))
+cdaar = (xs) -> cdr(car(car(xs)))
+cdadr = (xs) -> cdr(car(cdr(xs)))
+cddar = (xs) -> cdr(cdr(car(xs)))
+cdddr = (xs) -> cdr(cdr(cdr(xs)))
 
-################ Eval
+caaaar = (xs) -> car(car(car(car(xs))))
+caaadr = (xs) -> car(car(car(cdr(xs))))
+caadar = (xs) -> car(car(cdr(car(xs))))
+caaddr = (xs) -> car(car(cdr(cdr(xs))))
+cadaar = (xs) -> car(cdr(car(car(xs))))
+cadadr = (xs) -> car(cdr(car(cdr(xs))))
+caddar = (xs) -> car(cdr(cdr(car(xs))))
+cadddr = (xs) -> car(cdr(cdr(cdr(xs))))
+cdaaar = (xs) -> cdr(car(car(car(xs))))
+cdaadr = (xs) -> cdr(car(car(cdr(xs))))
+cdadar = (xs) -> cdr(car(cdr(car(xs))))
+cdaddr = (xs) -> cdr(car(cdr(cdr(xs))))
+cddaar = (xs) -> cdr(cdr(car(car(xs))))
+cddadr = (xs) -> cdr(cdr(car(cdr(xs))))
+cdddar = (xs) -> cdr(cdr(cdr(car(xs))))
+cddddr = (xs) -> cdr(cdr(cdr(cdr(xs))))
 
-Eval = (x, env=globalEnv) ->
-  if isa x, Symbol              # variable reference
-    env.find(x)[x]
-  else if not isa x, list       # constant literal
-    x
-  else if x[0] is 'quote'       # (quote exp)
-    [_, exp] = x
-    exp
-  else if x[0] is 'if'          # (if test conseq alt)
-    [_, test, conseq, alt] = x
-    branch = (if Eval(test, env) then conseq else alt)
-    Eval branch, env
-  else if x[0] is '='           # (= var exp)
-    [_, Var, exp] = x
-    scope = (if env.find(Var) then env.find(Var) else globalEnv)
-    scope[Var] = Eval exp, env
-  else if x[0] is 'fn'          # (fn (var*) exp)
-    [_, vars, exp] = x
-    (args...) -> Eval exp, new Env(vars, args, env)
-  else if x[0] is 'do'          # (do exp*)
-    val = Eval(exp, env) for exp in x[1..]
-    val
-  else                          # (proc exp*)
-    exps = (Eval(exp, env) for exp in x)
-    proc = exps.shift()
-    proc exps...
+len = (xs) ->
+  if xs is nil then 0 else 1 + len(cdr(xs))
 
-################ parse, read and user interaction
+arraylist = (a) ->
+  if a.length == 0 then nil else cons a[0], arraylist(a[1..])
 
-read = (s) ->
-  readFrom tokenize(s)
+list = (args...) -> arraylist(args)
 
-parse = read
+lookup1 = (name, vars, vals, env) ->
+  if vars is nil
+    lookup name, cdr(env)
+  else if name is car(vars)
+    vals
+  else
+    lookup1 name, cdr(vars), cdr(vals), env
+
+lookup = (name, env) ->
+  if env is nil
+    nil
+  else
+    lookup1 name, caar(env), cdar(env), env
+
+value1 = (name, slot) ->
+  if slot is nil then nil else car(slot)
+
+value = (name, env) ->
+  value1 name, lookup(name, env)
+
+bind = (vars, args, env) ->
+  if atom(vars)
+    cons(cons(list(vars), list(args)), env)
+  else
+    cons(cons(vars, args), env)
+
+apply = (f, args) ->
+  ev(caddr(f), bind(cadr(f), args, cadddr(f)))
+
+evlist = (xs, env) ->
+  if xs is nil
+    nil
+  else
+    cons(ev(car(xs), env), evlist(cdr(xs), env))
+
+evproc = (f, args, env) ->
+  if car(f) is '&procedure'
+    apply f, evlist(args, env)
+  else if car(f) is '&fexpr'
+    apply f, args
+
+globalEnv = nil
+
+# shouldn't have to reference globalEnv here
+evassign = (place, val, env) ->
+  env = globalEnv = bind(place, ev(val, env), env)
+  ev(val, env)
+
+# can fn, car, cdr and cons be removed from here?
+ev1 = (exp, env) ->
+  switch car(exp)
+    when 'vau' then list('&fexpr', cadr(exp), caddr(exp), env)
+    when 'fn' then list('&procedure', cadr(exp), caddr(exp), env)
+    when 'assign' then evassign(cadr(exp), caddr(exp), env)
+    when 'eval' then ev(cadr(exp), env)
+    when 'env' then env
+    when 'car' then car(ev(cadr(exp), env))
+    when 'cdr' then cdr(ev(cadr(exp), env))
+    when 'cons' then cons(ev(cadr(exp), env), ev(caddr(exp)))
+    else evproc(ev(car(exp), env), cdr(exp), env)
+
+ev = (exp, env=globalEnv) ->
+  if atom(exp) then value(exp, env) else ev1(exp, env)
+
+# recursive arraylist
+rarraylist = (a) ->
+  if a.length == 0
+    nil
+  else if isArray a[0]
+    cons rarraylist(a[0]), rarraylist(a[1..])
+  else
+    cons a[0], rarraylist(a[1..])
+
+tokensrarray = (ts) ->
+  tok = ts.shift()
+  if tok == '('
+    acc = []
+    while ts[0] != ')'
+      acc.push(tokensrarray ts)
+    ts.shift() # pop off ')'
+    acc
+  else
+    tok
 
 tokenize = (s) ->
   spaced = s.replace(/\(/g,' ( ').replace(/\)/g,' ) ').split(' ')
   _(spaced).without('') # purge of empty string tokens
 
-readFrom = (tokens) ->
-  if tokens.length == 0
-    alert 'unexpected EOF while reading'
-  token = tokens.shift()
-  if '(' == token
-    L = []
-    while tokens[0] != ')'
-      L.push(readFrom tokens)
-    tokens.shift() # pop off ')'
-    L
-  else if ')' == token
-    alert 'unexpected )'
+read = (s) ->
+  acc = tokensrarray tokenize(s)
+  if isArray acc then rarraylist acc else acc
+
+tostr = (s) ->
+  if atom s
+    if s is nil then 'nil' else s
   else
-    atom token
+    "(#{tostr car(s)} . #{tostr cdr(s)})"
 
-atom = (token) ->
-  if token.match /^\d+\.?$/
-    parseInt token
-  else if token.match /^\d*\.\d+$/
-    parseFloat token
-  else
-    "#{token}"
+X = (s) -> tostr(ev(read(s)))
 
-ToString = (exp) ->
-  if isa exp, list
-    '(' + (_(exp).map ToString).join(' ') + ')'
-  else
-    exp.toString()
+X('(assign quote (vau (x) x))')
 
-repl = (p='sweet> ') ->
-  while true
-    val = Eval(parse(prompt p))
-    alert(ToString val)
-
-sweet = (exp) -> Eval(parse exp)
-
-window.repl = repl
-window.read = read
-window.parse = parse
-window.tokenize = tokenize
-window.ToString = ToString
-window.atom = atom
-window.Env = Env
-window.globalEnv = globalEnv
-window.Eval = Eval
-window.sweet = sweet
-
-# repl()
+X('(assign t (quote t))')
+X('(assign nil (quote nil))')
