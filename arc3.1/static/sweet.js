@@ -5,8 +5,8 @@ test = function(name, x, expected) {
     return console.log("" + name + " test failed");
   }
 };
-t = true;
-nil = null;
+t = 't';
+nil = 'nil';
 isarray = function(x) {
   if (x && (typeof x === 'object') && (x.constructor === Array)) {
     return t;
@@ -16,7 +16,7 @@ isarray = function(x) {
 };
 acons = isarray;
 atom = function(x) {
-  if (acons(x)) {
+  if (acons(x) !== nil) {
     return nil;
   } else {
     return t;
@@ -176,7 +176,7 @@ value = function(name, env) {
   return value1(name, lookup(name, env));
 };
 bind = function(vars, args, env) {
-  if (atom(vars)) {
+  if (atom(vars) !== nil) {
     return cons(cons(list(vars), list(args)), env);
   } else {
     return cons(cons(vars, args), env);
@@ -229,28 +229,28 @@ ev = function(s, env) {
   if (env == null) {
     env = globalEnv;
   }
-  if (atom(s)) {
+  if (atom(s) !== nil) {
     return value(s, env);
   } else {
     return ev1(s, env);
   }
 };
 rarraylistDot = function(a) {
-  if (isarray(a[0])) {
+  if (isarray(a[0]) !== nil) {
     return cons(rarraylist(a[0]), rarraylist(a[2]));
   } else {
     return cons(a[0], rarraylist(a[2]));
   }
 };
 rarraylistNonDot = function(a) {
-  if (isarray(a[0])) {
+  if (isarray(a[0]) !== nil) {
     return cons(rarraylist(a[0]), rarraylist(a.slice(1)));
   } else {
     return cons(a[0], rarraylist(a.slice(1)));
   }
 };
 rarraylist = function(a) {
-  if (atom(a)) {
+  if (atom(a) !== nil) {
     return a;
   } else if (a.length === 0) {
     return nil;
@@ -296,29 +296,29 @@ test('read #5', read('(foo . bar)'), cons('foo', 'bar'));
 test('read #6', read('(foo . (bar . baz))'), cons('foo', cons('bar', 'baz')));
 test('read #7', read('(foo . (bar . nil))'), cons('foo', cons('bar', nil)));
 isfn = function(x) {
-  if (acons(x) && car(x) === '#<procedure>') {
+  if (acons(x) !== nil && car(x) === '#<procedure>') {
     return t;
   } else {
     return nil;
   }
 };
 isfexpr = function(x) {
-  if (acons(x) && (car(x) === '#<fexpr>')) {
+  if (acons(x) !== nil && (car(x) === '#<fexpr>')) {
     return t;
   } else {
     return nil;
   }
 };
 tostr = function(s) {
-  if (atom(s)) {
+  if (atom(s) !== nil) {
     if (s === nil) {
       return 'nil';
     } else {
       return s;
     }
-  } else if (isfn(s)) {
+  } else if (isfn(s) !== nil) {
     return '#<procedure>';
-  } else if (isfexpr(s)) {
+  } else if (isfexpr(s) !== nil) {
     return '#<fexpr>';
   } else {
     return "(" + (tostr(car(s))) + " . " + (tostr(cdr(s))) + ")";

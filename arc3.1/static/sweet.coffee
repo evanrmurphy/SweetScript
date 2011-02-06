@@ -4,8 +4,8 @@ test = (name, x, expected) ->
   unless _(x).isEqual(expected)
     console.log "#{name} test failed"
 
-t = true
-nil = null
+t = 't'
+nil = 'nil'
 
 isarray = (x) ->
   if (x and (typeof x is 'object') and
@@ -14,7 +14,7 @@ isarray = (x) ->
 acons = isarray
 
 atom = (x) ->
-  if acons(x) then nil else t
+  if acons(x) isnt nil then nil else t
 
 cons = (a, d) -> [a, d]
 test('cons #1', cons(1, nil), [1, nil])
@@ -103,7 +103,7 @@ value = (name, env) ->
   value1 name, lookup(name, env)
 
 bind = (vars, args, env) ->
-  if atom(vars)
+  if atom(vars) isnt nil
     cons(cons(list(vars), list(args)), env)
   else
     cons(cons(vars, args), env)
@@ -145,16 +145,16 @@ ev1 = (s, env) ->
     else evproc(ev(car(s), env), cdr(s), env)
 
 ev = (s, env=globalEnv) ->
-  if atom(s) then value(s, env) else ev1(s, env)
+  if atom(s) isnt nil then value(s, env) else ev1(s, env)
 
 rarraylistDot = (a) ->
-  if isarray a[0]
+  if isarray(a[0]) isnt nil
     cons rarraylist(a[0]), rarraylist a[2]
   else
     cons a[0], rarraylist a[2]
 
 rarraylistNonDot = (a) ->
-  if isarray a[0]
+  if isarray(a[0]) isnt nil
     cons rarraylist(a[0]), rarraylist(a[1..])
   else
     cons a[0], rarraylist(a[1..])
@@ -162,7 +162,7 @@ rarraylistNonDot = (a) ->
 # recursive arraylist, don't like name and
 # not even accurate with addition of atom case
 rarraylist = (a) ->
-  if atom a then a
+  if atom(a) isnt nil then a
   else if a.length == 0 then nil
   else if a.length == 3 and a[1] == '.'
     rarraylistDot a
@@ -202,16 +202,18 @@ test('read #6', read('(foo . (bar . baz))'), cons('foo', cons('bar', 'baz')))
 test('read #7', read('(foo . (bar . nil))'), cons('foo', cons('bar', nil))) # fails
 
 isfn = (x) ->
-  if acons(x) and car(x) is '#<procedure>' then t else nil
+  if acons(x) isnt nil and car(x) is '#<procedure>' then t else nil
 
 isfexpr = (x) ->
-  if acons(x) and (car(x) is '#<fexpr>') then t else nil
+  if acons(x) isnt nil and (car(x) is '#<fexpr>') then t else nil
 
 tostr = (s) ->
-  if atom s
+  if atom(s) isnt nil
     if s is nil then 'nil' else s
-  else if isfn(s) then '#<procedure>'
-  else if isfexpr(s) then '#<fexpr>'
+  else if isfn(s) isnt nil
+    '#<procedure>'
+  else if isfexpr(s) isnt nil
+    '#<fexpr>'
   else
     "(#{tostr car(s)} . #{tostr cdr(s)})"
 
