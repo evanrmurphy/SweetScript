@@ -110,6 +110,12 @@ bind = (vars, args, env) ->
 
 test('bind #1', bind(list('x'), list(1), nil), list(cons(list('x'), list(1))))
 
+test('value #1', value('x', nil), nil)
+test('value #2', value('x', bind(list('x'), list(1), nil)), 1)
+
+test('lookup #1', lookup('x', nil), nil)
+test('lookup #2', lookup('x', bind(list('x'), list(1), nil)), list(1))
+
 apply = (f, args) ->
   ev(caddr(f), bind(cadr(f), args, cadddr(f)))
 
