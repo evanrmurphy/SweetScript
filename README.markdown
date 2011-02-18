@@ -1,6 +1,6 @@
-**SweetScript has become [LavaScript](https://github.com/evanrmurphy/lava-script).**
-
 # SweetScript
+
+**SweetScript has died and been reborn as [LavaScript](https://github.com/evanrmurphy/lava-script). Seek your lispy-javascript goodness there!**
 
 A lispy language that compiles into JavaScript, strongly influenced by Arc.
 
